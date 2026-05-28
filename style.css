@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
+
+:root {
+  --bg: #f8f0e5;
+  --text: #0f172a;
+  --primary: #f0c330;
+  --secondary: #ff8484;
+  --tertiary: #9fe2bf;
+  --white: #ffffff;
+  
+  --border: 3px solid #000000;
+  --shadow: 4px 4px 0px 0px #000000;
+  --shadow-hover: 2px 2px 0px 0px #000000;
+}
+
+* { box-sizing: border-box; padding: 0; margin: 0; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Utilities */
+.container { width: 100%; max-width: 800px; margin: 0 auto; padding: 1.5rem; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+
+.text-bold { font-weight: 800; }
+.text-center { text-align: center; }
+.text-sm { font-size: 0.875rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.5rem; }
+.text-2xl { font-size: 2rem; }
+.text-3xl { font-size: 2.5rem; }
+
+/* Components */
+.neo-box {
+  background-color: var(--white);
+  border: var(--border);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.neo-btn {
+  font-family: inherit; font-weight: 800; font-size: 1rem;
+  background-color: var(--primary); color: var(--text);
+  border: var(--border); box-shadow: var(--shadow);
+  padding: 0.75rem 1.5rem; cursor: pointer;
+  transition: all 0.1s ease-in-out; text-decoration: none;
+  display: inline-block; text-align: center;
+}
+.neo-btn:hover { transform: translate(2px, 2px); box-shadow: var(--shadow-hover); }
+.neo-btn:active { transform: translate(4px, 4px); box-shadow: none; }
+.neo-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: var(--shadow); }
+
+.neo-btn-secondary { background-color: var(--secondary); }
+.neo-btn-tertiary { background-color: var(--tertiary); }
+.neo-btn-white { background-color: var(--white); }
+
+.neo-input, .neo-select {
+  font-family: inherit; font-size: 1rem;
+  padding: 0.75rem; border: var(--border);
+  background-color: var(--white); width: 100%; outline: none;
+}
+.neo-input:focus, .neo-select:focus { box-shadow: var(--shadow); }
+
+/* Modals */
+.neo-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+  display: none; justify-content: center; align-items: center; z-index: 1000;
+}
+.neo-overlay.active { display: flex; }
+.neo-modal {
+  background-color: var(--white); border: var(--border);
+  box-shadow: 8px 8px 0px 0px #000; width: 90%; max-width: 500px;
+  max-height: 90vh; overflow-y: auto; position: relative; padding: 2rem;
+}
+.close-btn {
+  position: absolute; top: 10px; right: 10px; padding: 0.25rem 0.5rem;
+}
+
+/* Dashboard Specifics */
+.wallet-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;
+}
+.wallet-card {
+  height: 140px; position: relative; cursor: pointer;
+}
+.wallet-card:hover {
+  transform: translate(-2px, -2px); box-shadow: 6px 6px 0px 0px #000;
+}
+.logo-icon { width: 40px; height: 40px; object-fit: cover; border: 2px solid #000; border-radius: 8px; }
+.amount-income { color: #059669; font-weight: 800; }
+.amount-expense { color: #dc2626; font-weight: 800; }
+.badge { display: inline-block; padding: 0.25rem 0.75rem; border: 2px solid #000; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; background-color: var(--white); }
