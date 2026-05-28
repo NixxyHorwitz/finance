@@ -50,7 +50,7 @@ export const authOptions = {
   pages: {
     signIn: "/login",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback_neobrutalism_secret_key_123",
 };
 
 const handler = NextAuth(authOptions);
