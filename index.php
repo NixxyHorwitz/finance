@@ -448,16 +448,30 @@ function renderTxList() {
 // ═══════════════════════════════════════
 //  NUMPAD — AMOUNT
 // ═══════════════════════════════════════
+// Single source of truth: amountRaw → update display + sync native input
 function updateAmtDisplay() {
   const el = document.getElementById('amountDisplay');
-  const v  = parseInt(amountRaw||'0',10);
+  const v  = parseInt(amountRaw||'0', 10);
   el.textContent = v ? fmt(v) : '0';
   el.classList.toggle('placeholder', !v);
+  // Sync native input (won't trigger oninput because we set .value directly)
+  if (!useKeypad) {
+    const ni = document.getElementById('nativeAmt');
+    if (ni) ni.value = v || '';
+  }
 }
 function numpad(n)   { if(amountRaw.length>=13||(!amountRaw&&n===0))return; amountRaw+=String(n); updateAmtDisplay(); }
 function numpadDel() { amountRaw=amountRaw.slice(0,-1); updateAmtDisplay(); }
+// quickAmt is additive — also syncs native input via updateAmtDisplay
 function quickAmt(n) { amountRaw=String(parseInt(amountRaw||'0',10)+n); updateAmtDisplay(); }
-function syncNativeAmt(v) { amountRaw=v?String(parseInt(v,10)):''; updateAmtDisplay(); }
+// Called by native input oninput — only update amountRaw & display text (avoid loop)
+function syncNativeAmt(v) {
+  amountRaw = v ? String(parseInt(v,10)) : '';
+  const el = document.getElementById('amountDisplay');
+  const num = parseInt(amountRaw||'0',10);
+  el.textContent = num ? fmt(num) : '0';
+  el.classList.toggle('placeholder', !num);
+}
 
 // ═══════════════════════════════════════
 //  NUMPAD — BALANCE
@@ -476,20 +490,24 @@ function balQuick(n)   { balRaw=String(n); updateBalDisplay(); }
 //  WALLET SELECTOR (modal)
 // ═══════════════════════════════════════
 function renderWalletSelectors() {
+  // Use state.wallets (has balance) — fall back to WALLETS if state not loaded yet
+  const source = state.wallets.length ? state.wallets : WALLETS;
   const make = (cid, hid, defaultIdx=0) => {
     const c = document.getElementById(cid);
     if (!c) return;
-    c.innerHTML = WALLETS.map((w,i) => {
+    c.innerHTML = source.map((w,i) => {
       const n = w.name.toLowerCase();
       let icon='';
       for (const k of Object.keys(iMap)){if(n.includes(k)){icon=`<img src="${iMap[k]}" class="wsel-emoji" alt="${w.name}">`;break;}}
       if(!icon){const e=n.includes('saving')?'🐷':'💵';icon=`<div class="wsel-emoji">${e}</div>`;}
-      return `<div class="wsel-item${i===defaultIdx?' selected':''}" onclick="selectWallet('${cid}','${hid}','${w.id}',this)">${icon}<span>${w.name}</span></div>`;
+      // Show balance if available
+      const balStr = w.balance !== undefined ? `<span class="wsel-bal">${fmtS(w.balance)}</span>` : '';
+      return `<div class="wsel-item${i===defaultIdx?' selected':''}" onclick="selectWallet('${cid}','${hid}','${w.id}',this)">${icon}<span class="wsel-name">${w.name}</span>${balStr}</div>`;
     }).join('');
-    if (WALLETS[defaultIdx]) document.getElementById(hid).value = WALLETS[defaultIdx].id;
+    if (source[defaultIdx]) document.getElementById(hid).value = source[defaultIdx].id;
   };
   make('fromWalletSel','selectedFromWallet',0);
-  make('toWalletSel','selectedToWallet', WALLETS.length>1?1:0);
+  make('toWalletSel','selectedToWallet', source.length>1?1:0);
 }
 function selectWallet(cid, hid, wId, el) {
   document.querySelectorAll('#'+cid+' .wsel-item').forEach(i=>i.classList.remove('selected'));
