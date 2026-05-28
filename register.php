@@ -1,18 +1,9 @@
 <?php
 require_once 'db.php';
 if (isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
+$pageTitle = 'Daftar – Neofinance';
+include '_head.php';
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daftar – Neofinance</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-  <link rel="stylesheet" href="style.css">
-</head>
 <body>
   <div class="center-wrap">
     <div class="auth-box">
@@ -48,20 +39,11 @@ if (isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
       err.classList.remove('show');
       btn.disabled = true; btn.textContent = 'Mendaftar…';
       try {
-        const res  = await fetch('auth_actions.php?action=register', { method:'POST', body:new FormData(e.target) });
+        const res  = await fetch('auth_actions.php?action=register',{method:'POST',body:new FormData(e.target)});
         const data = await res.json();
-        if (data.success) {
-          location.href = 'login.php?registered=1';
-        } else {
-          err.textContent = data.message;
-          err.classList.add('show');
-          btn.disabled = false; btn.textContent = 'Daftar';
-        }
-      } catch {
-        err.textContent = 'Terjadi kesalahan koneksi.';
-        err.classList.add('show');
-        btn.disabled = false; btn.textContent = 'Daftar';
-      }
+        if (data.success) { location.href='login.php?registered=1'; }
+        else { err.textContent=data.message; err.classList.add('show'); btn.disabled=false; btn.textContent='Daftar'; }
+      } catch { err.textContent='Terjadi kesalahan koneksi.'; err.classList.add('show'); btn.disabled=false; btn.textContent='Daftar'; }
     }
   </script>
 </body>
