@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  username     String        @unique
+  passwordHash String
+  wallets      Wallet[]
+  transactions Transaction[]
+}
+
+model Wallet {
+  id           String        @id @default(uuid())
+  userId       String
+  name         String
+  balance      Float         @default(0)
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[] @relation("WalletTransactions")
+  transfersIn  Transaction[] @relation("TransferInWallet")
+}
+
+model Transaction {
+  id               String   @id @default(uuid())
+  userId           String
+  walletId         String
+  type             String   // INCOME, EXPENSE, TRANSFER
+  amount           Float
+  categoryId       String?
+  description      String
+  date             DateTime @default(now())
+  relatedWalletId  String?  // If TRANSFER
+  user             User     @relation(fields: [userId], references: [id])
+  wallet           Wallet   @relation("WalletTransactions", fields: [walletId], references: [id])
+  relatedWallet    Wallet?  @relation("TransferInWallet", fields: [relatedWalletId], references: [id])
+}
+
+model Category {
+  id       String   @id @default(uuid())
+  name     String   @unique
+  keywords String   // Comma separated keywords, e.g., "makan,minum,food,snack"
+}
