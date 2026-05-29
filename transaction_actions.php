@@ -10,80 +10,108 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 $action = $_GET['action'] ?? '';
 
-// ─────────────────────────────────────────────────────────────
-//  SMART CATEGORIZE — Gen-Z ID dictionary (11 categories)
-//  Scoring: category with most keyword hits wins.
-// ─────────────────────────────────────────────────────────────
-function smartCategorize($description, $pdo) {
-    $desc = mb_strtolower(trim($description), 'UTF-8');
+// ═══════════════════════════════════════════════════════════
+//  CATEGORY CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const CATEGORIES = [
+    'Makanan & Minuman','Transportasi','Belanja','Hiburan',
+    'Tagihan','Kesehatan','Pendidikan','Kecantikan',
+    'Investasi','Perjalanan','Sosial & Hadiah','Lainnya'
+];
 
+// ═══════════════════════════════════════════════════════════
+//  GEMINI API — primary categorizer
+// ═══════════════════════════════════════════════════════════
+function callGemini(string $description, string $apiKey): ?string {
+    $catList = implode(', ', CATEGORIES);
+    $prompt  = "Kamu adalah sistem kategorisasi transaksi keuangan untuk pengguna Indonesia Gen-Z. " .
+               "Kategorikan deskripsi transaksi berikut ke dalam SATU kategori yang paling sesuai.\n\n" .
+               "Kategori: {$catList}\n\n" .
+               "Deskripsi: \"{$description}\"\n\n" .
+               "Jawab HANYA nama kategori persis seperti di atas. Tidak ada penjelasan lain.";
+
+    $payload = json_encode([
+        'contents'         => [['parts' => [['text' => $prompt]]]],
+        'generationConfig' => ['temperature' => 0, 'maxOutputTokens' => 30],
+    ]);
+
+    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' . $apiKey;
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 6,
+        CURLOPT_CONNECTTIMEOUT => 3,
+    ]);
+    $resp     = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200 || !$resp) return null;
+
+    $data = json_decode($resp, true);
+    $text = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+
+    // Exact match
+    if (in_array($text, CATEGORIES)) return $text;
+    // Partial match
+    foreach (CATEGORIES as $cat) {
+        if (stripos($text, $cat) !== false) return $cat;
+    }
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  KEYWORD FALLBACK — 11 category dictionary
+// ═══════════════════════════════════════════════════════════
+function keywordCategorize(string $desc): string {
     $rules = [
-
-        // 🍔 Makanan & Minuman
         "Makanan & Minuman" => [
-            // delivery
             "gofood","grabfood","shopeefood","shopee food",
-            // generic
             "makan","makanan","nasi","ayam","ikan","daging","sate","soto","bakso","mie","mi",
             "indomie","bubur","gado","ketoprak","lontong","rendang","gulai","pecel","rawon",
             "pempek","siomay","batagor","cilok","cimol","tahu","tempe","gorengan",
             "martabak","lumpia","risol","pastel","cireng",
-            // fast food & resto
             "pizza","burger","hotdog","sandwich","kebab","shawarma","sushi","ramen","udon",
             "pasta","steak","grill","bbq","fried chicken","kfc","mcd","mcdonalds",
             "hokben","hoka hoka","yoshinoya","solaria","popeyes","wendy",
             "warung","warteg","kantin","resto","restoran","rumah makan","depot","rm ",
-            // meals
             "sarapan","brunch","lunch","dinner","makan siang","makan malam","makan pagi",
             "jajan","ngemil","nongki","nongkrong",
-            // snacks & sweets
             "snack","camilan","keripik","oreo","biskuit","coklat","kue","donat",
             "waffle","pancake","pudding","es krim","ice cream","gelato","brownies",
             "cookies","roti","bakery","toast",
-            // drinks
-            "minum","minuman","kopi","ngopi","coffee","cafe","coffeshop","starbucks",
+            "minum","minuman","kopi","ngopi","coffee","cafe","coffeeshop","starbucks",
             "kopi kenangan","janji jiwa","fore coffee","flash coffee","excelso","jco",
             "dunkin","teh","tea","boba","thai tea","taro","matcha","oat milk",
-            "susu","jus","juice","smoothie","milkshake","es teh","aqua","miniso drink",
-            // specific spots / brands
+            "susu","jus","juice","smoothie","milkshake","es teh","aqua",
             "chatime","gong cha","tiger sugar","xing fu","mie gacoan","geprek",
             "lalapan","bebek","seafood","kepiting","cumi","pecel lele",
         ],
-
-        // 🚗 Transportasi
         "Transportasi" => [
-            // fuel
             "bensin","solar","pertamax","pertalite","pertamina","shell","spbu","bbm",
             "ngisi bensin","isi bensin","isi solar","full tank",
-            // ride hailing
             "gojek","grab","goride","grabride","gocar","grabcar","gopool",
             "maxim","indriver","ojek","ojol","ojek online",
-            // parking
             "parkir","parkiran","valet",
-            // toll
-            "tol","e-toll","etoll","toll",
-            // public transport
+            "tol","e-toll","etoll",
             "kereta","krl","commuter","mrt","lrt","transjakarta","busway","bus",
             "angkot","angkutan","mikrolet","damri","taxi","taksi","bluebird","blue bird",
-            // flights
             "tiket","pesawat","penerbangan","flight","lion air","garuda","citilink",
             "batik air","airasia","sriwijaya","super air",
             "traveloka","tiket.com","booking pesawat",
-            // maintenance
             "servis","service","bengkel","ganti oli","oli","ban","aki",
         ],
-
-        // 🛍️ Belanja
         "Belanja" => [
-            // e-commerce
             "shopee","tokopedia","lazada","tiktok shop","bukalapak","blibli","jd.id",
             "amazon","aliexpress","zalora","sociolla","berrybenka","orami",
             "checkout","marketplace","official store",
-            // minimarket / supermarket
             "indomaret","alfamart","alfamidi","circle k","lawson","family mart",
             "supermarket","hypermart","carrefour","transmart","giant","hero",
             "lottemart","ranch market","papaya","food hall","grand lucky",
-            // fashion
             "baju","kaos","celana","jeans","denim","jaket","sweater","hoodie","cardigan",
             "dress","rok","kemeja","jas","blazer","atasan","bawahan","outfit","pakaian",
             "fashion","clothing","apparel","uniqlo","zara","h&m","pull bear","cotton on",
@@ -92,67 +120,47 @@ function smartCategorize($description, $pdo) {
             "tas","tote bag","backpack","ransel","dompet","belt","sabuk",
             "jam tangan","kacamata","sunglasses","aksesoris","accessories",
             "topi","gelang","kalung","cincin","anting",
-            // electronics
             "hp","handphone","smartphone","iphone","samsung","oppo","xiaomi","vivo",
             "realme","poco","laptop","notebook","tablet","ipad","earphone","airpods",
             "headset","headphone","tws","speaker","charger","powerbank","power bank",
             "adapter","gadget","elektronik","monitor","keyboard","mouse",
-            // household
             "perabot","furniture","kasur","bantal","selimut","handuk","piring","gelas",
             "sabun","shampo","deterjen","pewangi",
         ],
-
-        // 🎮 Hiburan
         "Hiburan" => [
-            // streaming
             "netflix","disney+","disneyplus","hbo","max","vidio","viu",
             "amazon prime","youtube premium","wetv","mola","rcti",
             "spotify","joox","resso","tidal","apple music","deezer","soundcloud",
             "twitch","subscribe","langganan","streaming",
-            // gaming
             "game","gaming","steam","epic games","playstation","xbox","nintendo",
             "mobile legend","mlbb","pubg","free fire","freefire","genshin",
             "valorant","roblox","minecraft","cod","codm","call of duty",
             "topup","top up","diamond","uc","coin","gem","skin","token game",
             "voucher game","garena","riot","moonton","tencent","codashop","unipin",
-            // cinema
             "nonton","bioskop","cinema","cgv","cinepolis","xxi","21 cineplex","imax","4dx",
             "tiket bioskop","movie","film",
-            // activities
             "karaoke","bowling","arcade","warnet","gaming center",
             "hiking","mendaki","camping","kemping","outbound","rafting","paintball",
             "gym","fitness","olahraga","renang","badminton","futsal","basket","golf",
             "yoga","pilates","muay thai","boxing","taekwondo",
-            // events
             "konser","concert","festival","live show","event","pertunjukan",
             "tiket konser","meet and greet","fanmeet",
-            // hobby
             "manhwa","manga","webtoon","komik","novel","self reward",
         ],
-
-        // 📄 Tagihan
         "Tagihan" => [
-            // electricity
             "listrik","pln","token listrik","bayar listrik",
-            // water
             "pdam","air bersih","bayar air",
-            // internet & phone
             "internet","wifi","wi-fi","indihome","first media","biznet","myrepublic","transvision",
             "pulsa","kuota","data","paket data","isi pulsa","beli pulsa",
             "telkomsel","xl","axis","indosat","im3","tri","three","smartfren","byU","by.u",
-            // housing
             "kos","kost","kontrakan","indekos","apartemen","apartment","kamar kos",
             "sewa","ngekos","bayar kos","uang kos","bayar sewa","uang sewa","bulanan kos","ipl",
-            // installment
             "cicilan","kredit","angsuran","dp","uang muka","asuransi","premi",
             "kartu kredit","pinjaman","hutang","bayar hutang","jatuh tempo",
             "spaylater","shopee paylater","kredivo","akulaku","home credit","fif","baf",
-            // general
             "tagihan","iuran","bulanan","tahunan","abonemen",
             "pajak","pbb","pkb","stnk","perpanjang stnk",
         ],
-
-        // 💊 Kesehatan
         "Kesehatan" => [
             "dokter","klinik","puskesmas","rumah sakit","igd","usg",
             "konsultasi dokter","cek kesehatan","medical check",
@@ -162,8 +170,6 @@ function smartCategorize($description, $pdo) {
             "spa","massage","pijat","refleksi","akupuntur","lulur",
             "psikolog","psikiater","konseling","therapy","terapi",
         ],
-
-        // 📚 Pendidikan
         "Pendidikan" => [
             "spp","uang kuliah","biaya kuliah","uang semester","uang sekolah",
             "kursus","les","bimbel","privat","les privat","bimbingan belajar",
@@ -173,8 +179,6 @@ function smartCategorize($description, $pdo) {
             "alat tulis","pensil","bolpen","spidol","stabilo","kertas","hvs",
             "fotokopi","print","laminating","jilid",
         ],
-
-        // 💄 Kecantikan
         "Kecantikan" => [
             "salon","creambath","keriting","smoothing","rebonding","blow","cat rambut",
             "semir rambut","barbershop","potong rambut","cukur","hair treatment","hair mask",
@@ -188,8 +192,6 @@ function smartCategorize($description, $pdo) {
             "wardah","emina","ms glow","scarlett","somethinc","skintific","inez",
             "maybelline","loreal","nyx","pixy","implora","esqa",
         ],
-
-        // 📈 Investasi
         "Investasi" => [
             "saham","stock","nabung saham","reksadana","reksa dana","mutual fund",
             "obligasi","bonds","sbn","sukuk","ipo",
@@ -199,8 +201,6 @@ function smartCategorize($description, $pdo) {
             "bibit","bareksa","ipot","ajaib","pluang","indopremier",
             "investasi","invest","portofolio","dividen",
         ],
-
-        // ✈️ Perjalanan
         "Perjalanan" => [
             "hotel","penginapan","villa","airbnb","booking","check in","hostel","resort","glamping",
             "wisata","jalan jalan","liburan","healing","vacation","trip","tour","traveling",
@@ -208,8 +208,6 @@ function smartCategorize($description, $pdo) {
             "tiket masuk","entrance fee","loket","retribusi",
             "oleh oleh","souvenir","pasport","visa","imigrasi","koper",
         ],
-
-        // 🎁 Sosial & Hadiah
         "Sosial & Hadiah" => [
             "hadiah","kado","present","gift","hamper","parcel","bunga","bouquet",
             "sedekah","donasi","zakat","infak","amal","jariyah","sumbangan","wakaf","charity",
@@ -219,41 +217,65 @@ function smartCategorize($description, $pdo) {
         ],
     ];
 
-    // Scoring: count keyword hits per category, pick highest
+    // Scoring: pick category with most keyword hits
     $scores = [];
     foreach ($rules as $cat => $keywords) {
         $score = 0;
         foreach ($keywords as $kw) {
-            // word-boundary-aware: keyword must not be surrounded by other alphanumeric chars
             $pattern = '/(?<![a-z0-9])' . preg_quote($kw, '/') . '(?![a-z0-9])/u';
-            if (preg_match($pattern, $desc)) {
-                $score++;
-            }
+            if (preg_match($pattern, $desc)) $score++;
         }
         if ($score > 0) $scores[$cat] = $score;
     }
 
-    $matchedCategory = "Lainnya";
     if (!empty($scores)) {
         arsort($scores);
-        $matchedCategory = array_key_first($scores);
+        return array_key_first($scores);
     }
-
-    // Upsert category into DB
-    $stmt = $pdo->prepare("SELECT id FROM Category WHERE name = ?");
-    $stmt->execute([$matchedCategory]);
-    $catRow = $stmt->fetch();
-
-    if ($catRow) {
-        return $catRow['id'];
-    } else {
-        $newId = generateUUID();
-        $pdo->prepare("INSERT INTO Category (id, name, keywords) VALUES (?, ?, '')")
-            ->execute([$newId, $matchedCategory]);
-        return $newId;
-    }
+    return 'Lainnya';
 }
 
+// ═══════════════════════════════════════════════════════════
+//  UPSERT CATEGORY IN DB
+// ═══════════════════════════════════════════════════════════
+function upsertCategory(string $name, PDO $pdo): string {
+    $stmt = $pdo->prepare("SELECT id FROM Category WHERE name = ?");
+    $stmt->execute([$name]);
+    $row = $stmt->fetch();
+    if ($row) return $row['id'];
+
+    $newId = generateUUID();
+    $pdo->prepare("INSERT INTO Category (id, name, keywords) VALUES (?, ?, '')")
+        ->execute([$newId, $name]);
+    return $newId;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MAIN CATEGORIZE — Gemini first, keyword fallback
+// ═══════════════════════════════════════════════════════════
+function smartCategorize(string $description, PDO $pdo, string $userId): string {
+    // 1. Try Gemini API if user has a key configured
+    $s = $pdo->prepare("SELECT value FROM UserSetting WHERE userId = ? AND `key` = 'gemini_api_key'");
+    $s->execute([$userId]);
+    $row = $s->fetch();
+
+    if ($row && !empty(trim($row['value']))) {
+        $geminiCat = callGemini($description, trim($row['value']));
+        if ($geminiCat) {
+            return upsertCategory($geminiCat, $pdo);
+        }
+        // Gemini failed/timeout → fall through to keyword
+    }
+
+    // 2. Keyword scoring fallback
+    $desc = mb_strtolower(trim($description), 'UTF-8');
+    $cat  = keywordCategorize($desc);
+    return upsertCategory($cat, $pdo);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════════════════════
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'add_transaction') {
         $type            = $_POST['type'] ?? '';
@@ -276,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $categoryId = null;
             if ($type !== 'TRANSFER') {
-                $categoryId = smartCategorize($description, $pdo);
+                $categoryId = smartCategorize($description, $pdo, $userId);
             }
 
             $txId = generateUUID();
@@ -302,7 +324,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'set_balance') {
         $walletId = $_POST['walletId'] ?? '';
         $balance  = (float)($_POST['balance'] ?? 0);
-
         try {
             $pdo->prepare("UPDATE Wallet SET balance = ? WHERE id = ? AND userId = ?")
                 ->execute([$balance, $walletId, $userId]);

@@ -388,9 +388,10 @@ function toast(msg,type='') {
 }
 
 // â”€â”€â”€ Init â”€â”€â”€
-initToggles();
-renderWalletSettings();
+initToggles(); renderWalletSettings(); loadGeminiKeyStatus();
 </script>
 </body>
 </html>
+
+
 
