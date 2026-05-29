@@ -2,7 +2,7 @@
 require_once 'db.php';
 if (isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 $pageTitle = 'Login – Neofinance';
-include '_head.php';
+include 'src/components/_head.php';
 ?>
 <body>
   <div class="center-wrap">
@@ -46,7 +46,7 @@ include '_head.php';
       err.classList.remove('show');
       btn.disabled = true; btn.textContent = 'Memuat…';
       try {
-        const res  = await fetch('auth_actions.php?action=login',{method:'POST',body:new FormData(e.target)});
+        const res  = await fetch('src/actions/auth.php?action=login',{method:'POST',body:new FormData(e.target)});
         const data = await res.json();
         if (data.success) { location.href='index.php'; }
         else { err.textContent=data.message; err.classList.add('show'); btn.disabled=false; btn.textContent='Masuk'; }
