@@ -19,7 +19,7 @@ include '_head.php';
 
   <!-- Header -->
   <div class="page-header">
-    <a href="index.php" class="btn btn-ghost btn-xs" style="padding:0.38rem 0.55rem;">&#x2190;</a>
+    <a href="/" class="btn btn-ghost btn-xs" style="padding:0.38rem 0.55rem;">&#x2190;</a>
     <div class="page-title">Pengaturan</div>
   </div>
 
@@ -174,17 +174,17 @@ include '_head.php';
 
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
-  <a class="nav-item" href="index.php">
+  <a class="nav-item" href="/">
     <div class="nav-icon">&#x1F3E0;</div>
     <div class="nav-label">Beranda</div>
   </a>
-  <a class="nav-item" href="flow.php">
+  <a class="nav-item" href="flow">
     <div class="nav-icon">&#x1F4CA;</div>
     <div class="nav-label">Aliran</div>
   </a>
-  <div class="nav-fab" onclick="location.href='index.php'">&#xFF0B;</div>
+  <div class="nav-fab" onclick="location.href='/'">&#xFF0B;</div>
   <div class="nav-item" style="flex:1"></div>
-  <a class="nav-item active" href="settings.php">
+  <a class="nav-item active" href="settings">
     <div class="nav-icon">&#x2699;&#xFE0F;</div>
     <div class="nav-label">Pengaturan</div>
   </a>

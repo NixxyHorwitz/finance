@@ -1,0 +1,51 @@
+# ═══════════════════════════════════════════
+#  NEOFINANCE — Security & Clean URLs
+# ═══════════════════════════════════════════
+
+Options -Indexes -MultiViews
+ServerSignature Off
+
+# ── Security Headers ──────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# ── Block sensitive files ──────────────────
+<FilesMatch "^(db|_head|_add_jago|AGENTS|CLAUDE|README|\.env|\.gitignore)\.(php|md|txt|env|gitignore)?$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "\.(sql|sh|log|md|json)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block .git directory
+<IfModule mod_rewrite.c>
+    RewriteRule ^\.git - [F,L]
+</IfModule>
+
+# ── Clean URL Routing ──────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Already a real file or directory — serve directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Route clean URLs to .php files
+    RewriteRule ^([a-zA-Z][a-zA-Z0-9_-]*)/?$ $1.php [NC,L]
+</IfModule>
+
+# ── PHP Settings ───────────────────────────
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+</IfModule>

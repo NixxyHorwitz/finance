@@ -9,7 +9,7 @@ include '_head.php';
 <div class="page-wrap">
 
   <div class="page-header">
-    <a href="index.php" class="btn btn-ghost btn-xs">&#x2190;</a>
+    <a href="/" class="btn btn-ghost btn-xs">&#x2190;</a>
     <div class="page-title">&#x1F4B8; Aliran Dana</div>
   </div>
 
@@ -48,17 +48,18 @@ include '_head.php';
 
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
-  <a class="nav-item" href="index.php">
+  <a class="nav-item" href="/">
     <div class="nav-icon">&#x1F3E0;</div>
     <div class="nav-label">Beranda</div>
   </a>
-  <a class="nav-item active" href="flow.php">
+  <a class="nav-item" href="history"><div class="nav-icon">&#x1F4CB;</div><div class="nav-label">Riwayat</div></a>
+  <a class="nav-item active" href="flow">
     <div class="nav-icon">&#x1F4CA;</div>
     <div class="nav-label">Aliran</div>
   </a>
-  <a class="nav-fab" href="index.php" onclick="sessionStorage.setItem('openAdd','1')">&#xFF0B;</a>
+  <a class="nav-fab" href="/" onclick="sessionStorage.setItem('openAdd','1')">&#xFF0B;</a>
   <div class="nav-item" style="flex:1"></div>
-  <a class="nav-item" href="settings.php">
+  <a class="nav-item" href="settings">
     <div class="nav-icon">&#x2699;&#xFE0F;</div>
     <div class="nav-label">Pengaturan</div>
   </a>
