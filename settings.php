@@ -318,17 +318,14 @@ function renderWalletSettings() {
   const list=document.getElementById('walletSettingsList');
   if (!WALLETS.length) { list.innerHTML='<div class="empty" style="padding:2rem;text-align:center;color:var(--muted)">Belum ada dompet</div>'; return; }
   list.innerHTML = WALLETS.map((w, i)=>`
-    <div class="wallet-settings-item">
+    <div class="wallet-settings-item" draggable="true" ondragstart="wDragStart(event, ${i})" ondragover="wDragOver(event)" ondrop="wDrop(event, ${i})" ondragend="wDragEnd(event)" style="cursor:move;">
+      <div style="font-size:16px; color:var(--muted); padding-right:4px;">&#9776;</div>
       ${getIcon(w.name)}
       <div class="wallet-settings-info">
         <div class="wallet-settings-name">${esc(w.name)}</div>
         <div class="wallet-settings-bal">${fmtS(w.balance)}</div>
       </div>
       <div class="wallet-settings-actions">
-        <div style="display:flex; flex-direction:column; gap:2px; margin-right:4px;">
-          <button class="btn btn-ghost btn-xs" style="padding:0 4px;font-size:10px" onclick="moveWallet(${i}, -1)" ${i===0?'disabled':''}>&#x25B2;</button>
-          <button class="btn btn-ghost btn-xs" style="padding:0 4px;font-size:10px" onclick="moveWallet(${i}, 1)" ${i===WALLETS.length-1?'disabled':''}>&#x25BC;</button>
-        </div>
         <button class="btn btn-ghost btn-xs" onclick="openWalletNameModal('${w.id}','${w.name.replace(/'/g,"\\'")}')">&#x270F;&#xFE0F; Nama</button>
         <button class="btn btn-xs" onclick="openBalModal('${w.id}','${w.name.replace(/'/g,"\\'")}',${w.balance})">&#x1F4B0; Saldo</button>
       </div>
@@ -336,16 +333,30 @@ function renderWalletSettings() {
   `).join('');
 }
 
-async function moveWallet(idx, dir) {
-  if (idx + dir < 0 || idx + dir >= WALLETS.length) return;
-  // Swap
-  const temp = WALLETS[idx];
-  WALLETS[idx] = WALLETS[idx + dir];
-  WALLETS[idx + dir] = temp;
+let wDraggedIdx = null;
+function wDragStart(e, idx) {
+  wDraggedIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', idx);
+  setTimeout(() => e.target.style.opacity = '0.5', 0);
+}
+function wDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+function wDragEnd(e) {
+  e.target.style.opacity = '1';
+}
+async function wDrop(e, targetIdx) {
+  e.preventDefault();
+  if (wDraggedIdx === null || wDraggedIdx === targetIdx) return;
   
-  renderWalletSettings(); // Re-render UI immediately
+  const temp = WALLETS[wDraggedIdx];
+  WALLETS.splice(wDraggedIdx, 1);
+  WALLETS.splice(targetIdx, 0, temp);
   
-  // Save to backend
+  renderWalletSettings();
+  
   const order = WALLETS.map(w => w.id);
   const fd = new URLSearchParams();
   fd.append('order', JSON.stringify(order));

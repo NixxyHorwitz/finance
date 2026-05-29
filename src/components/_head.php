@@ -5,7 +5,7 @@ $pageTitle = $pageTitle ?? 'Neofinance';
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="description" content="Neofinance - Catatan keuangan pribadi yang cepat dan modern">
   <title><?= htmlspecialchars($pageTitle) ?></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,6 +65,7 @@ body {
   padding: 0.55rem 0.9rem; box-shadow: var(--sh-s);
   background: var(--yellow); color: var(--text);
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .btn:hover  { transform: translate(-1px,-1px); box-shadow: var(--sh); }
 .btn:active { transform: translate(2px,2px); box-shadow: none; }
@@ -263,7 +264,7 @@ input::placeholder { color: var(--muted); font-weight: 500; }
 
 /* NUMPAD */
 .numpad { display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; margin-bottom:0.875rem; }
-.nk { display:flex; align-items:center; justify-content:center; height:56px; font-family:inherit; font-size:1.15rem; font-weight:800; border:2px solid var(--border); border-radius:var(--r-s); background:var(--surface); cursor:pointer; box-shadow:var(--sh-s); transition:all 0.08s; user-select:none; -webkit-tap-highlight-color:transparent; }
+.nk { display:flex; align-items:center; justify-content:center; height:56px; font-family:inherit; font-size:1.15rem; font-weight:800; border:2px solid var(--border); border-radius:var(--r-s); background:var(--surface); cursor:pointer; box-shadow:var(--sh-s); transition:all 0.08s; user-select:none; -webkit-tap-highlight-color:transparent; touch-action: manipulation; }
 .nk:hover  { transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--border); }
 .nk:active { transform:translate(2px,2px); box-shadow:none; background:var(--yellow); }
 .nk-0   { grid-column:span 2; }
