@@ -122,7 +122,17 @@ include 'src/components/_head.php';
     </div>
   </div>
 
-  
+  <!-- Integrasi AI -->
+  <div class="settings-section">
+    <div class="settings-section-title">Integrasi AI &#x2728;</div>
+    <div class="settings-card">
+      <div class="settings-item" id="aiRow">
+        <div class="settings-item-left">
+          <div class="settings-icon" style="background:#E8F5E9;">&#x2728;</div>
+          <div>
+            <div class="settings-label">OpenAI API Key</div>
+            <div class="settings-sub" id="aiStatus">Mengecek&#x2026;</div>
+          </div>
         </div>
         <button class="btn btn-ghost btn-xs" onclick="toggleEdit('aiEdit')">Edit</button>
       </div>
@@ -130,15 +140,14 @@ include 'src/components/_head.php';
         <div id="aiAlert" class="alert alert-err"></div>
         <div id="aiOk" class="alert alert-ok"></div>
         <p style="font-size:0.7rem;color:var(--muted);margin-bottom:0.5rem;line-height:1.5;">
-          Dapatkan API key gratis di <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--blue);font-weight:700;">aistudio.google.com</a> &mdash; 1 juta token/hari, no CC required.<br>
-          Kalau diisi, transaksi akan dikategorikan pakai Gemini AI (lebih akurat).
+          Dapatkan API key di <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);font-weight:700;">platform.openai.com</a>.<br>
+          Kalau diisi, transaksi akan dikategorikan otomatis dengan cerdas.
         </p>
         <div class="inline-edit-row">
-          <input type="password" id="geminiApiKey" placeholder="AIzaSy...">
-          <button class="btn btn-xs" onclick="saveGeminiKey()" style="flex-shrink:0">Simpan</button>
+          <input type="password" id="openaiApiKey" placeholder="sk-proj-...">
+          <button class="btn btn-xs" onclick="saveOpenAIKey()" style="flex-shrink:0">Simpan</button>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -481,8 +490,42 @@ function toast(msg,type='') {
   setTimeout(()=>t.remove(),2600);
 }
 
+// --- OpenAI API ---
+async function saveOpenAIKey() {
+  const alertErr = document.getElementById('aiAlert');
+  const alertOk  = document.getElementById('aiOk');
+  alertErr.classList.remove('show'); alertOk.classList.remove('show');
+  const key = document.getElementById('openaiApiKey').value.trim();
+  if (!key) { alertErr.textContent='API Key tidak boleh kosong.'; alertErr.classList.add('show'); return; }
+  
+  const fd = new FormData(); fd.append('key','openai_api_key'); fd.append('value',key);
+  try {
+    const res = await fetch('src/actions/settings.php?action=save_setting',{method:'POST',body:fd});
+    const d = await res.json();
+    if (d.success) {
+      alertOk.textContent='API Key tersimpan.'; alertOk.classList.add('show');
+      document.getElementById('aiStatus').textContent='Terhubung \u2705';
+      document.getElementById('aiStatus').style.color='var(--mint)';
+      document.getElementById('openaiApiKey').value='';
+    } else { alertErr.textContent=d.message; alertErr.classList.add('show'); }
+  } catch { alertErr.textContent='Koneksi gagal.'; alertErr.classList.add('show'); }
+}
+
+async function checkOpenAIStatus() {
+  try {
+    const res = await fetch('src/actions/settings.php?action=get_setting&key=openai_api_key');
+    const d = await res.json();
+    if (d.success && d.value && d.value.trim() !== '') {
+      document.getElementById('aiStatus').textContent = 'Terhubung \u2705';
+      document.getElementById('aiStatus').style.color = 'var(--mint)';
+    } else {
+      document.getElementById('aiStatus').textContent = 'Diatur via .env / Belum diatur';
+    }
+  } catch(e) {}
+}
+
 // --- Init ---
-initToggles(); renderWalletSettings(); loadGeminiKeyStatus();
+initToggles(); renderWalletSettings(); checkOpenAIStatus();
 </script>
 </body>
 </html>
