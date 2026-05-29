@@ -14,33 +14,37 @@ ServerSignature Off
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
 
-# ── Block sensitive files ──────────────────
-<FilesMatch "^(db|_head|_add_jago|AGENTS|CLAUDE|README|\.env|\.gitignore)\.(php|md|txt|env|gitignore)?$">
+# ── Block sensitive & internal files ──────
+<FilesMatch "^(db|_head|_add_jago|AGENTS|CLAUDE|README|style)\.(php|css|md|txt)?$">
     Order allow,deny
     Deny from all
 </FilesMatch>
 
-<FilesMatch "\.(sql|sh|log|md|json)$">
+<FilesMatch "\.(sql|sh|log|md|json|env|gitignore)$">
     Order allow,deny
     Deny from all
 </FilesMatch>
 
-# Block .git directory
-<IfModule mod_rewrite.c>
-    RewriteRule ^\.git - [F,L]
-</IfModule>
+# Block old root-level API files (moved to src/)
+<FilesMatch "^(api_data|api_flow|transaction_actions|settings_actions|auth_actions)\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
 
-# ── Clean URL Routing ──────────────────────
+# ── Rewrite rules ─────────────────────────
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
 
-    # Already a real file or directory — serve directly
+    # Block .git
+    RewriteRule ^\.git - [F,L]
+
+    # Already a real file or directory
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # Route clean URLs to .php files
+    # Clean URL routing for pages
     RewriteRule ^([a-zA-Z][a-zA-Z0-9_-]*)/?$ $1.php [NC,L]
 </IfModule>
 

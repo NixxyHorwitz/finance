@@ -2,7 +2,7 @@
 require_once 'db.php';
 requireLogin();
 $pageTitle = 'Riwayat Transaksi &ndash; Neofinance';
-include '_head.php';
+include 'src/components/_head.php';
 ?>
 <body>
 
@@ -53,32 +53,11 @@ include '_head.php';
 </div>
 
 <!-- Bottom Nav -->
-<nav class="bottom-nav">
-  <a class="nav-item" href="/">
-    <div class="nav-icon">&#x1F3E0;</div>
-    <div class="nav-label">Beranda</div>
-  </a>
-  <a class="nav-item active" href="history">
-    <div class="nav-icon">&#x1F4CB;</div>
-    <div class="nav-label">Riwayat</div>
-  </a>
-  <div class="nav-fab" onclick="openAddModal()">&#xFF0B;</div>
-  <a class="nav-item" href="flow">
-    <div class="nav-icon">&#x1F4CA;</div>
-    <div class="nav-label">Aliran</div>
-  </a>
-  <a class="nav-item" href="settings">
-    <div class="nav-icon">&#x2699;&#xFE0F;</div>
-    <div class="nav-label">Pengaturan</div>
-  </a>
-</nav>
+<?php $navPage = 'history'; include 'src/components/_navbar.php'; ?>
 
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- MODAL: ADD RECORD -->
-<div class="overlay" id="addOverlay" onclick="if(event.target===this)closeAddModal()">
-  <div class="modal" id="addModal">
-    <div class="modal-handle"></div>
+<?php include 'src/components/_add_modal.php'; ?>
     <div class="modal-head">
       <span class="modal-title">&#x270F;&#xFE0F; Catat Transaksi</span>
       <span class="modal-close" onclick="closeAddModal()">&#x2715;</span>
@@ -137,6 +116,7 @@ include '_head.php';
   </div>
 </div>
 
+<script src="src/js/add_modal.js"></script>
 <script>
 const LS_VIS    = 'nf_bal_vis';
 const LS_KEYPAD = 'nf_keypad';
@@ -185,7 +165,7 @@ const esc  = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/
 
 async function loadData() {
   try {
-    const res = await fetch('api_data.php');
+    const res = await fetch('src/api/data.php');
     const d   = await res.json();
     if (!d.success) { toast('Gagal memuat','err'); return; }
     allTx   = d.transactions;
@@ -314,7 +294,7 @@ function goPage(p) {
 async function deleteTx(id) {
   if(!confirm('Hapus transaksi ini? Saldo akan dikembalikan.'))return;
   try {
-    const res=await fetch('transaction_actions.php?action=delete_transaction',{method:'DELETE',body:new URLSearchParams({id}),headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    const res=await fetch('src/actions/transaction.php?action=delete_transaction',{method:'DELETE',body:new URLSearchParams({id}),headers:{'Content-Type':'application/x-www-form-urlencoded'}});
     const d=await res.json();
     if(d.success){toast('Dihapus \u2713','ok');await loadData();}
     else toast(d.message,'err');
@@ -384,7 +364,7 @@ async function submitRecord(){
   fd.append('type',currentType);fd.append('amount',amount);fd.append('description',desc);fd.append('walletId',fromW);
   if(currentType==='TRANSFER')fd.append('relatedWalletId',toW);
   try{
-    const res=await fetch('transaction_actions.php?action=add_transaction',{method:'POST',body:fd});
+    const res=await fetch('src/actions/transaction.php?action=add_transaction',{method:'POST',body:fd});
     const d=await res.json();
     if(d.success){closeAddModal();toast('Transaksi disimpan \u2713','ok');await loadData();}
     else{alertEl.textContent=d.message;alertEl.classList.add('show');}

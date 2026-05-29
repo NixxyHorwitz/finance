@@ -11,7 +11,7 @@ unset($w);
 $walletsJson = json_encode($wallets);
 
 $pageTitle = 'Pengaturan &ndash; Neofinance';
-include '_head.php';
+include 'src/components/_head.php';
 ?>
 <body>
 
@@ -173,23 +173,9 @@ include '_head.php';
 </div><!-- /page-wrap -->
 
 <!-- Bottom Nav -->
-<nav class="bottom-nav">
-  <a class="nav-item" href="/">
-    <div class="nav-icon">&#x1F3E0;</div>
-    <div class="nav-label">Beranda</div>
-  </a>
-  <a class="nav-item" href="flow">
-    <div class="nav-icon">&#x1F4CA;</div>
-    <div class="nav-label">Aliran</div>
-  </a>
-  <div class="nav-fab" onclick="location.href='/'">&#xFF0B;</div>
-  <div class="nav-item" style="flex:1"></div>
-  <a class="nav-item active" href="settings">
-    <div class="nav-icon">&#x2699;&#xFE0F;</div>
-    <div class="nav-label">Pengaturan</div>
-  </a>
-</nav>
+<?php $navPage = 'settings'; include 'src/components/_navbar.php'; ?>
 
+<?php include 'src/components/_add_modal.php'; ?>
 <!-- Toast -->
 <div class="toast-wrap" id="toastWrap"></div>
 
@@ -260,6 +246,7 @@ include '_head.php';
   </div>
 </div>
 
+<script src="src/js/add_modal.js"></script>
 <script>
 const WALLETS  = <?= $walletsJson ?>;
 const LS_VIS   = 'nf_bal_vis';
@@ -298,7 +285,7 @@ async function changeUsername() {
   const username=document.getElementById('newUsername').value.trim();
   const fd=new FormData(); fd.append('username',username);
   try {
-    const res=await fetch('settings_actions.php?action=change_username',{method:'POST',body:fd});
+    const res=await fetch('src/actions/settings.php?action=change_username',{method:'POST',body:fd});
     const d=await res.json();
     if(d.success){
       document.getElementById('curUsername').textContent=username;
@@ -317,7 +304,7 @@ async function changePassword() {
   const nw =document.getElementById('newPass').value;
   const fd=new FormData(); fd.append('current_password',cur); fd.append('new_password',nw);
   try {
-    const res=await fetch('settings_actions.php?action=change_password',{method:'POST',body:fd});
+    const res=await fetch('src/actions/settings.php?action=change_password',{method:'POST',body:fd});
     const d=await res.json();
     if(d.success){
       alertOk.textContent=d.message; alertOk.classList.add('show');
@@ -371,7 +358,7 @@ async function submitWalletName() {
   const name=document.getElementById('walletNewName').value.trim();
   const fd=new FormData(); fd.append('walletId',walletId); fd.append('name',name);
   try {
-    const res=await fetch('settings_actions.php?action=update_wallet',{method:'POST',body:fd});
+    const res=await fetch('src/actions/settings.php?action=update_wallet',{method:'POST',body:fd});
     const d=await res.json();
     if(d.success){ closeWalletNameModal(); toast('Nama dompet diperbarui \u2713','ok'); setTimeout(()=>location.reload(),1000); }
     else { alertEl.textContent=d.message; alertEl.classList.add('show'); }
@@ -407,7 +394,7 @@ async function submitBalance() {
   btn.disabled=true; btn.textContent='Menyimpan\u2026';
   const fd=new FormData(); fd.append('walletId',walletId); fd.append('balance',balance);
   try {
-    const res=await fetch('transaction_actions.php?action=set_balance',{method:'POST',body:fd});
+    const res=await fetch('src/actions/transaction.php?action=set_balance',{method:'POST',body:fd});
     const d=await res.json();
     if(d.success){ closeBalModal(); toast('Saldo diperbarui \u2713','ok'); setTimeout(()=>location.reload(),1000); }
     else { alertEl.textContent=d.message; alertEl.classList.add('show'); }
@@ -418,7 +405,7 @@ async function submitBalance() {
 // --- Gemini API Key ---
 async function loadGeminiKeyStatus() {
   try {
-    const res = await fetch('settings_actions.php?action=get_setting&key=gemini_api_key');
+    const res = await fetch('src/actions/settings.php?action=get_setting&key=gemini_api_key');
     const d   = await res.json();
     const el  = document.getElementById('aiStatus');
     if (d.value && d.value.trim()) {
@@ -441,7 +428,7 @@ async function saveGeminiKey() {
   fd.append('key', 'gemini_api_key');
   fd.append('value', key);
   try {
-    const res = await fetch('settings_actions.php?action=save_setting', { method:'POST', body:fd });
+    const res = await fetch('src/actions/settings.php?action=save_setting', { method:'POST', body:fd });
     const d   = await res.json();
     if (d.success) {
       alertOk.textContent = key ? '\u2705 API key disimpan!' : 'API key dihapus.';
