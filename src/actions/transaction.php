@@ -20,15 +20,71 @@ const CATEGORIES = [
 ];
 
 // ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+//  GEMINI API — primary categorizer
+// ═══════════════════════════════════════════════════════════
+function callGemini(string $description, string $apiKey): ?string {
+    $catList = implode(', ', CATEGORIES);
+    $prompt  = "Kamu adalah asisten keuangan Gen-Z Indonesia yang ahli mengkategorikan transaksi.\n" .
+               "Tugasmu: Kategorikan deskripsi berikut ke dalam SATU kategori yang paling relevan.\n\n" .
+               "Konteks/Bahasa Gaul:\n" .
+               "- 'ciki', 'seblak', 'boba', 'mixue', 'kopi', 'gofood', 'jajan', 'makan' -> Makanan & Minuman\n" .
+               "- 'gojek', 'grab', 'bensin', 'parkir', 'krl', 'mrt' -> Transportasi\n" .
+               "- 'topup', 'gopay', 'dana', 'ovo', 'tf' -> Transfer/Lainnya (tergantung konteks)\n" .
+               "- 'shopee', 'tokped', 'baju', 'skincare' -> Belanja\n" .
+               "- 'netflix', 'spotify', 'nonton', 'bioskop' -> Hiburan\n\n" .
+               "Daftar Kategori: {$catList}\n\n" .
+               "Deskripsi Transaksi: \"{$description}\"\n\n" .
+               "Jawab HANYA dengan SATU nama kategori persis seperti di atas. Tanpa tanda baca, penjelasan, atau kata tambahan.";
+
+    $payload = json_encode([
+        'contents'         => [['parts' => [['text' => $prompt]]]],
+        'generationConfig' => ['temperature' => 0, 'maxOutputTokens' => 30],
+    ]);
+
+    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' . $apiKey;
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 6,
+        CURLOPT_CONNECTTIMEOUT => 3,
+    ]);
+    $resp     = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200 || !$resp) return null;
+
+    $data = json_decode($resp, true);
+    $text = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+
+    if (in_array($text, CATEGORIES)) return $text;
+    foreach (CATEGORIES as $cat) {
+        if (stripos($text, $cat) !== false) return $cat;
+    }
+    return null;
+}
+
 //  OPENAI API — primary categorizer
 // ═══════════════════════════════════════════════════════════
 function callOpenAI(string $description, string $apiKey): ?string {
     $catList = implode(', ', CATEGORIES);
-    $prompt  = "Kamu adalah sistem kategorisasi transaksi keuangan untuk pengguna Indonesia Gen-Z.\n" .
-               "Kategorikan deskripsi transaksi berikut ke dalam SATU kategori yang paling sesuai.\n" .
-               "Kategori: {$catList}\n" .
-               "Deskripsi: \"{$description}\"\n" .
-               "Jawab HANYA nama kategori persis seperti di atas. Tidak ada penjelasan lain.";
+    $prompt  = "Kamu adalah asisten keuangan Gen-Z Indonesia yang ahli mengkategorikan transaksi.\n" .
+               "Tugasmu: Kategorikan deskripsi berikut ke dalam SATU kategori yang paling relevan.\n\n" .
+               "Konteks/Bahasa Gaul:\n" .
+               "- 'ciki', 'seblak', 'boba', 'mixue', 'kopi', 'gofood', 'jajan', 'makan' -> Makanan & Minuman\n" .
+               "- 'gojek', 'grab', 'bensin', 'parkir', 'krl', 'mrt' -> Transportasi\n" .
+               "- 'topup', 'gopay', 'dana', 'ovo', 'tf' -> Transfer/Lainnya (tergantung konteks)\n" .
+               "- 'shopee', 'tokped', 'baju', 'skincare' -> Belanja\n" .
+               "- 'netflix', 'spotify', 'nonton', 'bioskop' -> Hiburan\n\n" .
+               "Daftar Kategori: {$catList}\n\n" .
+               "Deskripsi Transaksi: \"{$description}\"\n\n" .
+               "Jawab HANYA dengan SATU nama kategori persis seperti di atas. Tanpa tanda baca, penjelasan, atau kata tambahan.";
 
     $payload = json_encode([
         'model'       => 'gpt-4o-mini',
@@ -259,22 +315,41 @@ function upsertCategory(string $name, PDO $pdo): string {
 
 
 // ═══════════════════════════════════════════════════════════
-//  MAIN CATEGORIZE — OpenAI first, keyword fallback
+//  MAIN CATEGORIZE — Dynamic AI with keyword fallback
 // ═══════════════════════════════════════════════════════════
 function smartCategorize(string $description, PDO $pdo, string $userId): string {
-    // 1. Try OpenAI API if configured in .env
+    // Check AI Provider setting
+    $s = $pdo->prepare("SELECT `key`, value FROM UserSetting WHERE userId = ? AND `key` IN ('ai_provider', 'gemini_api_key', 'openai_api_key')");
+    $s->execute([$userId]);
+    $settings = [];
+    while ($r = $s->fetch()) $settings[$r['key']] = trim($r['value']);
+    
+    $provider = $settings['ai_provider'] ?? 'openai'; // default to openai
+
+    // Also check .env for fallback
     $envPath = __DIR__ . '/../../.env';
     $env = file_exists($envPath) ? parse_ini_file($envPath) : [];
-    $openAiKey = $env['OPENAI_API_KEY'] ?? null;
+    
+    $aiCat = null;
 
-    if ($openAiKey && !empty(trim($openAiKey))) {
-        $aiCat = callOpenAI($description, trim($openAiKey));
-        if ($aiCat) {
-            return upsertCategory($aiCat, $pdo);
+    if ($provider === 'gemini') {
+        $geminiKey = $settings['gemini_api_key'] ?? ($env['GEMINI_API_KEY'] ?? null);
+        if ($geminiKey) {
+            $aiCat = callGemini($description, $geminiKey);
+        }
+    } else {
+        // OpenAI
+        $openAiKey = $settings['openai_api_key'] ?? ($env['OPENAI_API_KEY'] ?? null);
+        if ($openAiKey) {
+            $aiCat = callOpenAI($description, $openAiKey);
         }
     }
 
-    // 2. Keyword scoring fallback
+    if ($aiCat) {
+        return upsertCategory($aiCat, $pdo);
+    }
+
+    // Keyword scoring fallback
     $desc = mb_strtolower(trim($description), 'UTF-8');
     $cat  = keywordCategorize($desc);
     return upsertCategory($cat, $pdo);

@@ -122,7 +122,7 @@ include 'src/components/_head.php';
     </div>
   </div>
 
-  <!-- Integrasi AI -->
+    <!-- Integrasi AI -->
   <div class="settings-section">
     <div class="settings-section-title">Integrasi AI &#x2728;</div>
     <div class="settings-card">
@@ -130,10 +130,38 @@ include 'src/components/_head.php';
         <div class="settings-item-left">
           <div class="settings-icon" style="background:#E8F5E9;">&#x2728;</div>
           <div>
-            <div class="settings-label">OpenAI API Key</div>
+            <div class="settings-label">Kecerdasan Buatan (AI)</div>
             <div class="settings-sub" id="aiStatus">Mengecek&#x2026;</div>
           </div>
         </div>
+        <button class="btn btn-ghost btn-xs" onclick="toggleEdit('aiEdit')">Edit</button>
+      </div>
+      <div class="inline-edit" id="aiEdit">
+        <div id="aiAlert" class="alert alert-err"></div>
+        <div id="aiOk" class="alert alert-ok"></div>
+        
+        <div class="fgroup" style="margin-bottom:0.75rem;">
+          <label>Pilih AI Engine</label>
+          <select id="aiProvider" style="width:100%; padding:0.5rem; border:2px solid var(--border); border-radius:var(--r-s); font-family:inherit; font-size:0.8rem;" onchange="updateAIText()">
+            <option value="openai">OpenAI (ChatGPT)</option>
+            <option value="gemini">Google Gemini</option>
+          </select>
+        </div>
+
+        <p id="aiHintOpenAI" style="font-size:0.7rem;color:var(--muted);margin-bottom:0.5rem;line-height:1.5;">
+          Dapatkan API key di <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);font-weight:700;">platform.openai.com</a>.
+        </p>
+        <p id="aiHintGemini" style="font-size:0.7rem;color:var(--muted);margin-bottom:0.5rem;line-height:1.5; display:none;">
+          Dapatkan API key gratis di <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--blue);font-weight:700;">aistudio.google.com</a> &mdash; 1 juta token/hari gratis.
+        </p>
+
+        <div class="inline-edit-row">
+          <input type="password" id="aiApiKey" placeholder="Biarkan kosong jika pakai .env">
+          <button class="btn btn-xs" onclick="saveAIConfig()" style="flex-shrink:0">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
         <button class="btn btn-ghost btn-xs" onclick="toggleEdit('aiEdit')">Edit</button>
       </div>
       <div class="inline-edit" id="aiEdit">
@@ -490,42 +518,54 @@ function toast(msg,type='') {
   setTimeout(()=>t.remove(),2600);
 }
 
-// --- OpenAI API ---
-async function saveOpenAIKey() {
+// --- AI Engine ---
+function updateAIText() {
+  const p = document.getElementById('aiProvider').value;
+  document.getElementById('aiHintOpenAI').style.display = p === 'openai' ? 'block' : 'none';
+  document.getElementById('aiHintGemini').style.display = p === 'gemini' ? 'block' : 'none';
+}
+
+async function saveAIConfig() {
   const alertErr = document.getElementById('aiAlert');
   const alertOk  = document.getElementById('aiOk');
   alertErr.classList.remove('show'); alertOk.classList.remove('show');
-  const key = document.getElementById('openaiApiKey').value.trim();
-  if (!key) { alertErr.textContent='API Key tidak boleh kosong.'; alertErr.classList.add('show'); return; }
+  const provider = document.getElementById('aiProvider').value;
+  const key = document.getElementById('aiApiKey').value.trim();
   
-  const fd = new FormData(); fd.append('key','openai_api_key'); fd.append('value',key);
+  const fd = new FormData(); 
+  fd.append('provider', provider);
+  if (key) fd.append('key', key);
+
   try {
-    const res = await fetch('src/actions/settings.php?action=save_setting',{method:'POST',body:fd});
+    const res = await fetch('src/actions/settings.php?action=save_ai_config',{method:'POST',body:fd});
     const d = await res.json();
     if (d.success) {
-      alertOk.textContent='API Key tersimpan.'; alertOk.classList.add('show');
-      document.getElementById('aiStatus').textContent='Terhubung \u2705';
+      alertOk.textContent='Konfigurasi AI tersimpan.'; alertOk.classList.add('show');
+      document.getElementById('aiStatus').textContent='Terhubung \u2705 (' + provider.toUpperCase() + ')';
       document.getElementById('aiStatus').style.color='var(--mint)';
-      document.getElementById('openaiApiKey').value='';
+      document.getElementById('aiApiKey').value='';
     } else { alertErr.textContent=d.message; alertErr.classList.add('show'); }
   } catch { alertErr.textContent='Koneksi gagal.'; alertErr.classList.add('show'); }
 }
 
-async function checkOpenAIStatus() {
+async function checkAIStatus() {
   try {
-    const res = await fetch('src/actions/settings.php?action=get_setting&key=openai_api_key');
+    const res = await fetch('src/actions/settings.php?action=get_ai_config');
     const d = await res.json();
-    if (d.success && d.value && d.value.trim() !== '') {
-      document.getElementById('aiStatus').textContent = 'Terhubung \u2705';
-      document.getElementById('aiStatus').style.color = 'var(--mint)';
-    } else {
-      document.getElementById('aiStatus').textContent = 'Diatur via .env / Belum diatur';
+    if (d.success) {
+      if (d.provider) document.getElementById('aiProvider').value = d.provider;
+      updateAIText();
+      if (d.hasKey) {
+        document.getElementById('aiStatus').textContent = 'Terhubung \u2705 (' + d.provider.toUpperCase() + ')';
+        document.getElementById('aiStatus').style.color = 'var(--mint)';
+      } else {
+        document.getElementById('aiStatus').textContent = 'Mode: ' + d.provider.toUpperCase() + ' (Cek .env)';
+      }
     }
   } catch(e) {}
 }
-
 // --- Init ---
-initToggles(); renderWalletSettings(); checkOpenAIStatus();
+initToggles(); renderWalletSettings(); checkAIStatus();
 </script>
 </body>
 </html>
