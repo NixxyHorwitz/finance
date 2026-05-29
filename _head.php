@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = $pageTitle ?? 'Neofinance';
 ?>
 <!DOCTYPE html>

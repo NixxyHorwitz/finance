@@ -1,7 +1,7 @@
-﻿<?php
+<?php
 require_once 'db.php';
 requireLogin();
-$pageTitle = 'Aliran Dana â€“ Neofinance';
+$pageTitle = 'Aliran Dana &ndash; Neofinance';
 include '_head.php';
 ?>
 <body>
@@ -9,8 +9,8 @@ include '_head.php';
 <div class="page-wrap">
 
   <div class="page-header">
-    <a href="index.php" class="btn btn-ghost btn-xs">â†</a>
-    <div class="page-title">ðŸ’¸ Aliran Dana</div>
+    <a href="index.php" class="btn btn-ghost btn-xs">&#x2190;</a>
+    <div class="page-title">&#x1F4B8; Aliran Dana</div>
   </div>
 
   <!-- Period tabs -->
@@ -24,13 +24,13 @@ include '_head.php';
   <div id="flowTotalCard" class="flow-total-card">
     <div>
       <div class="flow-total-label">Total Pengeluaran</div>
-      <div class="flow-total-amt" id="flowTotalAmt">Memuatâ€¦</div>
+      <div class="flow-total-amt" id="flowTotalAmt">Memuat&#x2026;</div>
     </div>
-    <div style="font-size:2.5rem;opacity:0.7">ðŸ’¸</div>
+    <div style="font-size:2.5rem;opacity:0.7">&#x1F4B8;</div>
   </div>
 
   <!-- Flow diagram -->
-  <div class="sec-label mb-1" style="display:block">Dompet â†’ Kategori</div>
+  <div class="sec-label mb-1" style="display:block">Dompet &#x2192; Kategori</div>
   <div class="flow-wrap" id="flowWrap">
     <div class="flow-col-left"  id="flowWallets"></div>
     <div class="flow-svg-mid"   id="flowSvgMid"><svg id="flowSvg"></svg></div>
@@ -38,7 +38,7 @@ include '_head.php';
   </div>
 
   <p style="font-size:0.7rem;color:var(--muted);text-align:center;margin-bottom:1rem;">
-    Tap kategori untuk lihat detailnya ðŸ‘†
+    Tap kategori untuk lihat detailnya &#x1F446;
   </p>
 
   <!-- Category detail drill-down -->
@@ -49,17 +49,17 @@ include '_head.php';
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
   <a class="nav-item" href="index.php">
-    <div class="nav-icon">ðŸ </div>
+    <div class="nav-icon">&#x1F3E0;</div>
     <div class="nav-label">Beranda</div>
   </a>
   <a class="nav-item active" href="flow.php">
-    <div class="nav-icon">ðŸ“Š</div>
+    <div class="nav-icon">&#x1F4CA;</div>
     <div class="nav-label">Aliran</div>
   </a>
-  <a class="nav-fab" href="index.php#add" onclick="sessionStorage.setItem('openAdd','1')">ï¼‹</a>
+  <a class="nav-fab" href="index.php" onclick="sessionStorage.setItem('openAdd','1')">&#xFF0B;</a>
   <div class="nav-item" style="flex:1"></div>
   <a class="nav-item" href="settings.php">
-    <div class="nav-icon">âš™ï¸</div>
+    <div class="nav-icon">&#x2699;&#xFE0F;</div>
     <div class="nav-label">Pengaturan</div>
   </a>
 </nav>
@@ -67,9 +67,9 @@ include '_head.php';
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-let period     = 7;
-let allData    = null;
-let activeCat  = null;
+let period    = 7;
+let allData   = null;
+let activeCat = null;
 
 const fmtR = n => 'Rp ' + Number(n).toLocaleString('id-ID');
 const fmtS = n => {
@@ -81,37 +81,45 @@ const fmtD = d => new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'s
 const esc  = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 const catEmoji = {
-  makanan:'ðŸ”', makan:'ðŸ”', food:'ðŸ”', resto:'ðŸ”', warung:'ðŸ”',
-  transport:'ðŸš—', bensin:'â›½', ojek:'ðŸ›µ', parkir:'ðŸ…¿ï¸', grab:'ðŸ›µ', gojek:'ðŸ›µ',
-  belanja:'ðŸ›ï¸', shop:'ðŸ›ï¸',
-  hiburan:'ðŸŽ®', game:'ðŸŽ®', nonton:'ðŸŽ¬',
-  kesehatan:'ðŸ’Š', obat:'ðŸ’Š', dokter:'ðŸ‘¨â€âš•ï¸',
-  tagihan:'ðŸ“„', listrik:'âš¡', air:'ðŸ’§', internet:'ðŸ“¶',
-  pendidikan:'ðŸ“š', buku:'ðŸ“–',
-  investasi:'ðŸ“ˆ',
+  'makanan & minuman':'\uD83C\uDF5C', makanan:'\uD83C\uDF5C', food:'\uD83C\uDF5C',
+  resto:'\uD83C\uDF5C', warung:'\uD83C\uDF5C', makan:'\uD83C\uDF5C',
+  transportasi:'\uD83D\uDE97', transport:'\uD83D\uDE97', bensin:'\u26FD', ojek:'\uD83D\uDEF5',
+  parkir:'\uD83C\uDD7F\uFE0F', grab:'\uD83D\uDEF5', gojek:'\uD83D\uDEF5',
+  belanja:'\uD83D\uDED2', shop:'\uD83D\uDED2',
+  hiburan:'\uD83C\uDFAE', game:'\uD83C\uDFAE', nonton:'\uD83C\uDFAC',
+  kesehatan:'\uD83D\uDC8A', obat:'\uD83D\uDC8A', dokter:'\uD83D\uDC68\u200D\u2695\uFE0F',
+  tagihan:'\uD83D\uDCC4', listrik:'\u26A1', internet:'\uD83D\uDCF6',
+  pendidikan:'\uD83D\uDCDA', buku:'\uD83D\uDCD6',
+  kecantikan:'\uD83D\uDC84', salon:'\uD83D\uDC87',
+  investasi:'\uD83D\uDCC8',
+  perjalanan:'\u2708\uFE0F', hotel:'\uD83C\uDFE8',
+  'sosial & hadiah':'\uD83C\uDF81', hadiah:'\uD83C\uDF81', donasi:'\uD83E\uDD1D',
+  lainnya:'\uD83D\uDCCC',
 };
 function getCatEmoji(name) {
   const n = (name||'').toLowerCase();
   for (const [k,v] of Object.entries(catEmoji)) { if(n.includes(k)) return v; }
-  return 'ðŸ“Œ';
+  return '\uD83D\uDCCC';
 }
 
-const iMap = { dana:'public/dana.png', gopay:'public/gopay.png', shopeepay:'public/shopeepay.png', jago:'public/jago.png' };
+const iMap = {
+  dana:'public/dana.png', gopay:'public/gopay.png',
+  shopeepay:'public/shopeepay.png', jago:'public/jago.png'
+};
 function getWalletEmoji(name) {
   const n=(name||'').toLowerCase();
-  if(n.includes('saving'))return'ðŸ·';
-  return 'ðŸ’µ';
+  if(n.includes('saving')) return '\uD83D\uDC37';
+  return '\uD83D\uDCB5';
 }
 
-// â”€â”€â”€ Load â”€â”€â”€
+// --- Load ---
 async function loadFlow() {
-  document.getElementById('flowTotalAmt').textContent = 'Memuatâ€¦';
+  document.getElementById('flowTotalAmt').textContent = 'Memuat\u2026';
   document.getElementById('flowWallets').innerHTML  = '';
   document.getElementById('flowCats').innerHTML     = '';
   document.getElementById('flowSvg').innerHTML      = '';
   document.getElementById('catDetailWrap').innerHTML = '';
   activeCat = null;
-
   try {
     const res = await fetch('api_flow.php?days=' + period);
     allData   = await res.json();
@@ -127,7 +135,7 @@ function setPeriod(days, btn) {
   loadFlow();
 }
 
-// â”€â”€â”€ Render â”€â”€â”€
+// --- Render ---
 function renderFlow() {
   const expenses = allData.transactions.filter(t => t.type === 'EXPENSE');
   const total    = expenses.reduce((s,t) => s + t.amount, 0);
@@ -159,7 +167,7 @@ function renderFlow() {
   });
   const cats = Object.values(catMap).sort((a,b) => b.amount - a.amount);
 
-  // Walletâ†’Category pairs
+  // Wallet-Category pairs
   const pairMap = {};
   expenses.forEach(t => {
     const cat = t.categoryName || 'Lainnya';
@@ -197,25 +205,22 @@ function renderFlow() {
     </div>`;
   }).join('');
 
-  // Draw SVG lines after layout
   requestAnimationFrame(() => {
     setTimeout(() => drawLines(pairs, wallets, cats, total), 80);
   });
 }
 
-// â”€â”€â”€ SVG Lines â”€â”€â”€
+// --- SVG Lines ---
 function drawLines(pairs, wallets, cats, total) {
   const svg    = document.getElementById('flowSvg');
   const midEl  = document.getElementById('flowSvgMid');
   const midRect= midEl.getBoundingClientRect();
   const scrollY= window.scrollY || document.documentElement.scrollTop;
 
-  // set SVG height to match wrapper
   const wrapH = document.getElementById('flowWrap').offsetHeight;
   svg.setAttribute('viewBox', `0 0 48 ${wrapH}`);
   svg.setAttribute('height', wrapH);
   midEl.style.height = wrapH + 'px';
-
   svg.innerHTML = '';
 
   pairs.forEach(p => {
@@ -230,11 +235,8 @@ function drawLines(pairs, wallets, cats, total) {
     const wRect = wEl.getBoundingClientRect();
     const cRect = cEl.getBoundingClientRect();
 
-    // Convert to SVG coordinate space (relative to midEl)
-    const x1 = 0;
-    const y1  = (wRect.top + wRect.height/2 + scrollY) - (midRect.top + scrollY);
-    const x2  = 48;
-    const y2  = (cRect.top + cRect.height/2 + scrollY) - (midRect.top + scrollY);
+    const y1 = (wRect.top + wRect.height/2 + scrollY) - (midRect.top + scrollY);
+    const y2 = (cRect.top + cRect.height/2 + scrollY) - (midRect.top + scrollY);
 
     const strokeW = Math.max(1.5, (p.amount / total) * 16);
     const opacity = 0.25 + (p.amount / total) * 0.6;
@@ -250,7 +252,7 @@ function drawLines(pairs, wallets, cats, total) {
   });
 }
 
-// â”€â”€â”€ Category detail â”€â”€â”€
+// --- Category detail ---
 function showCatDetail(catName, idx) {
   if (activeCat === catName) { closeCatDetail(); return; }
   activeCat = catName;
@@ -259,7 +261,6 @@ function showCatDetail(catName, idx) {
   const el = document.getElementById('fc' + idx);
   if (el) el.classList.add('active');
 
-  const cat = Object.values({}).constructor.name; // dummy
   const txs = allData.transactions.filter(t =>
     t.type === 'EXPENSE' && (t.categoryName || 'Lainnya') === catName
   );
@@ -271,16 +272,16 @@ function showCatDetail(catName, idx) {
       <div class="cat-detail-head">
         <div>
           <div class="cat-detail-title">${getCatEmoji(catName)} ${esc(catName)}</div>
-          <div class="cat-detail-sub">${txs.length} transaksi Â· Total ${fmtR(catTotal)}</div>
+          <div class="cat-detail-sub">${txs.length} transaksi \u00B7 Total ${fmtR(catTotal)}</div>
         </div>
-        <button class="btn btn-ghost btn-xs" onclick="closeCatDetail()">âœ•</button>
+        <button class="btn btn-ghost btn-xs" onclick="closeCatDetail()">\u2715</button>
       </div>
       ${txs.map(t => `
         <div class="tx-item">
-          <div class="tx-icon expense">ðŸ’¸</div>
+          <div class="tx-icon expense">\uD83D\uDCB8</div>
           <div class="tx-body">
             <div class="tx-desc">${esc(t.description)}</div>
-            <div class="tx-meta">${fmtD(t.date)} Â· ${esc(t.walletName)}</div>
+            <div class="tx-meta">${fmtD(t.date)} \u00B7 ${esc(t.walletName)}</div>
           </div>
           <div class="tx-right">
             <span class="tx-amt expense">-${fmtS(t.amount)}</span>
@@ -306,13 +307,8 @@ function toast(msg, type='') {
   setTimeout(() => t.remove(), 2600);
 }
 
-// Redraw lines on resize
-window.addEventListener('resize', () => {
-  if (allData) renderFlow();
-});
-
+window.addEventListener('resize', () => { if (allData) renderFlow(); });
 loadFlow();
 </script>
 </body>
 </html>
-

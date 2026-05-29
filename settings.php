@@ -1,14 +1,16 @@
-﻿<?php
+<?php
 require_once 'db.php';
 requireLogin();
 
 $userId = $_SESSION['user_id'];
-$sw = $pdo->prepare("SELECT * FROM Wallet WHERE userId = ? ORDER BY FIELD(name,'Cash','Dana','Gopay','ShopeePay','Savings')");
+$sw = $pdo->prepare("SELECT * FROM Wallet WHERE userId = ? ORDER BY FIELD(name,'Cash','Dana','Gopay','ShopeePay','Bank Jago','Savings')");
 $sw->execute([$userId]);
 $wallets = $sw->fetchAll();
+foreach ($wallets as &$w) $w['balance'] = (float)$w['balance'];
+unset($w);
 $walletsJson = json_encode($wallets);
 
-$pageTitle = 'Pengaturan â€“ Neofinance';
+$pageTitle = 'Pengaturan &ndash; Neofinance';
 include '_head.php';
 ?>
 <body>
@@ -17,11 +19,11 @@ include '_head.php';
 
   <!-- Header -->
   <div class="page-header">
-    <a href="index.php" class="btn btn-ghost btn-xs" style="padding:0.38rem 0.55rem;">â†</a>
+    <a href="index.php" class="btn btn-ghost btn-xs" style="padding:0.38rem 0.55rem;">&#x2190;</a>
     <div class="page-title">Pengaturan</div>
   </div>
 
-  <!-- â”€â”€â”€ Profil â”€â”€â”€ -->
+  <!-- Profil -->
   <div class="settings-section">
     <div class="settings-section-title">Profil</div>
     <div class="settings-card">
@@ -29,7 +31,7 @@ include '_head.php';
       <!-- Username -->
       <div class="settings-item" id="uRow">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#EEF1FF;">ðŸ‘¤</div>
+          <div class="settings-icon" style="background:#EEF1FF;">&#x1F464;</div>
           <div>
             <div class="settings-label">Username</div>
             <div class="settings-sub" id="curUsername"><?= htmlspecialchars($_SESSION['username']) ?></div>
@@ -49,7 +51,7 @@ include '_head.php';
       <!-- Password -->
       <div class="settings-item" id="pRow">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#EDFFF9;">ðŸ”‘</div>
+          <div class="settings-icon" style="background:#EDFFF9;">&#x1F512;</div>
           <div>
             <div class="settings-label">Password</div>
             <div class="settings-sub">Ubah password akun</div>
@@ -62,7 +64,7 @@ include '_head.php';
         <div id="pOk" class="alert alert-ok"></div>
         <div class="fgroup">
           <label>Password Saat Ini</label>
-          <input type="password" id="curPass" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢">
+          <input type="password" id="curPass" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;">
         </div>
         <div class="fgroup" style="margin-bottom:0.5rem">
           <label>Password Baru</label>
@@ -74,7 +76,7 @@ include '_head.php';
     </div>
   </div>
 
-  <!-- â”€â”€â”€ Preferensi â”€â”€â”€ -->
+  <!-- Preferensi -->
   <div class="settings-section">
     <div class="settings-section-title">Preferensi</div>
     <div class="settings-card">
@@ -82,7 +84,7 @@ include '_head.php';
       <!-- Balance visibility -->
       <div class="settings-item">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#FFF8E7;">ðŸ‘</div>
+          <div class="settings-icon" style="background:#FFF8E7;">&#x1F441;</div>
           <div>
             <div class="settings-label">Tampilkan Saldo</div>
             <div class="settings-sub">Sembunyikan nominal saldo</div>
@@ -97,7 +99,7 @@ include '_head.php';
       <!-- Input mode -->
       <div class="settings-item">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#F5EEFF;">ðŸ”¢</div>
+          <div class="settings-icon" style="background:#F5EEFF;">&#x1F522;</div>
           <div>
             <div class="settings-label">Mode Input Keypad</div>
             <div class="settings-sub">Gunakan keypad kustom saat input nominal</div>
@@ -112,7 +114,7 @@ include '_head.php';
     </div>
   </div>
 
-  <!-- â”€â”€â”€ Dompet â”€â”€â”€ -->
+  <!-- Dompet -->
   <div class="settings-section">
     <div class="settings-section-title">Dompet</div>
     <div class="settings-card" id="walletSettingsList">
@@ -120,13 +122,44 @@ include '_head.php';
     </div>
   </div>
 
-  <!-- â”€â”€â”€ Danger Zone â”€â”€â”€ -->
+  <!-- Integrasi AI -->
+  <div class="settings-section">
+    <div class="settings-section-title">Integrasi AI &#x2728;</div>
+    <div class="settings-card">
+
+      <div class="settings-item" id="aiRow">
+        <div class="settings-item-left">
+          <div class="settings-icon" style="background:#E8F5E9;">&#x2728;</div>
+          <div>
+            <div class="settings-label">Gemini API Key</div>
+            <div class="settings-sub" id="aiStatus">Mengecek&#x2026;</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-xs" onclick="toggleEdit('aiEdit')">Edit</button>
+      </div>
+      <div class="inline-edit" id="aiEdit">
+        <div id="aiAlert" class="alert alert-err"></div>
+        <div id="aiOk" class="alert alert-ok"></div>
+        <p style="font-size:0.7rem;color:var(--muted);margin-bottom:0.5rem;line-height:1.5;">
+          Dapatkan API key gratis di <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--blue);font-weight:700;">aistudio.google.com</a> &mdash; 1 juta token/hari, no CC required.<br>
+          Kalau diisi, transaksi akan dikategorikan pakai Gemini AI (lebih akurat).
+        </p>
+        <div class="inline-edit-row">
+          <input type="password" id="geminiApiKey" placeholder="AIzaSy...">
+          <button class="btn btn-xs" onclick="saveGeminiKey()" style="flex-shrink:0">Simpan</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sesi -->
   <div class="settings-section">
     <div class="settings-section-title">Sesi</div>
     <div class="settings-card">
       <div class="settings-item">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#FFF0F0;">ðŸšª</div>
+          <div class="settings-icon" style="background:#FFF0F0;">&#x1F6AA;</div>
           <div>
             <div class="settings-label">Keluar</div>
             <div class="settings-sub">Logout dari akun ini</div>
@@ -142,14 +175,17 @@ include '_head.php';
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
   <a class="nav-item" href="index.php">
-    <div class="nav-icon">ðŸ </div>
+    <div class="nav-icon">&#x1F3E0;</div>
     <div class="nav-label">Beranda</div>
   </a>
-  <div class="nav-item" style="flex:1"></div>
-  <div class="nav-fab" onclick="location.href='index.php'">ï¼‹</div>
+  <a class="nav-item" href="flow.php">
+    <div class="nav-icon">&#x1F4CA;</div>
+    <div class="nav-label">Aliran</div>
+  </a>
+  <div class="nav-fab" onclick="location.href='index.php'">&#xFF0B;</div>
   <div class="nav-item" style="flex:1"></div>
   <a class="nav-item active" href="settings.php">
-    <div class="nav-icon">âš™ï¸</div>
+    <div class="nav-icon">&#x2699;&#xFE0F;</div>
     <div class="nav-label">Pengaturan</div>
   </a>
 </nav>
@@ -157,7 +193,7 @@ include '_head.php';
 <!-- Toast -->
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- â•â•â• Modal: Set Balance Wallet â•â•â• -->
+<!-- Modal: Set Balance Wallet -->
 <div class="overlay" id="balOverlay" onclick="if(event.target===this)closeBalModal()">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -166,7 +202,7 @@ include '_head.php';
         <div class="modal-title">Atur Saldo</div>
         <div id="balModalSub" style="font-size:0.72rem;color:var(--muted);margin-top:2px;"></div>
       </div>
-      <span class="modal-close" onclick="closeBalModal()">âœ•</span>
+      <span class="modal-close" onclick="closeBalModal()">&#x2715;</span>
     </div>
     <div class="modal-body">
       <div id="balAlert" class="alert alert-err"></div>
@@ -175,6 +211,7 @@ include '_head.php';
         <div class="amount-value" id="balDisplay">0</div>
       </div>
       <div class="quick-amounts mb-1">
+        <button class="quick-btn" onclick="balQuick(0)">Reset</button>
         <button class="quick-btn" onclick="balQuick(10000)">10rb</button>
         <button class="quick-btn" onclick="balQuick(50000)">50rb</button>
         <button class="quick-btn" onclick="balQuick(100000)">100rb</button>
@@ -193,21 +230,23 @@ include '_head.php';
         <button class="nk" onclick="balNumpad(8)">8</button>
         <button class="nk" onclick="balNumpad(9)">9</button>
         <button class="nk nk-0" onclick="balNumpad(0)">0</button>
-        <button class="nk nk-del" onclick="balNumpadDel()">âŒ«</button>
+        <button class="nk nk-del" onclick="balNumpadDel()">&#x232B;</button>
       </div>
       <input type="hidden" id="balWalletId">
-      <button class="btn btn-full btn-lg" id="balSubmitBtn" onclick="submitBalance()" style="margin-top:0.5rem;">ðŸ’¾ Simpan Saldo</button>
+      <button class="btn btn-full btn-lg" id="balSubmitBtn" onclick="submitBalance()" style="margin-top:0.5rem;">
+        &#x1F4BE; Simpan Saldo
+      </button>
     </div>
   </div>
 </div>
 
-<!-- â•â•â• Modal: Edit Wallet Name â•â•â• -->
+<!-- Modal: Edit Wallet Name -->
 <div class="overlay" id="walletNameOverlay" onclick="if(event.target===this)closeWalletNameModal()">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-head">
       <div class="modal-title">Edit Nama Dompet</div>
-      <span class="modal-close" onclick="closeWalletNameModal()">âœ•</span>
+      <span class="modal-close" onclick="closeWalletNameModal()">&#x2715;</span>
     </div>
     <div class="modal-body">
       <div id="wnAlert" class="alert alert-err"></div>
@@ -234,7 +273,7 @@ const fmtS = n => {
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 let balRaw = '';
 
-// â”€â”€â”€ Init toggles from localStorage â”€â”€â”€
+// --- Init toggles ---
 function initToggles() {
   const vis = localStorage.getItem(LS_VIS);
   document.getElementById('toggleVis').checked = vis===null ? true : vis==='1';
@@ -244,16 +283,14 @@ function initToggles() {
 
 function savePref(key, val) {
   localStorage.setItem(key, val ? '1' : '0');
-  toast(val ? 'Diaktifkan âœ“' : 'Dinonaktifkan', 'ok');
+  toast(val ? 'Diaktifkan \u2713' : 'Dinonaktifkan', 'ok');
 }
 
-// â”€â”€â”€ Toggle inline edit â”€â”€â”€
 function toggleEdit(id) {
-  const el=document.getElementById(id);
-  el.classList.toggle('open');
+  document.getElementById(id).classList.toggle('open');
 }
 
-// â”€â”€â”€ Change Username â”€â”€â”€
+// --- Username ---
 async function changeUsername() {
   const alertErr=document.getElementById('uAlert');
   const alertOk =document.getElementById('uOk');
@@ -266,12 +303,12 @@ async function changeUsername() {
     if(d.success){
       document.getElementById('curUsername').textContent=username;
       alertOk.textContent=d.message; alertOk.classList.add('show');
-      toast('Username diubah âœ“','ok');
+      toast('Username diubah \u2713','ok');
     } else { alertErr.textContent=d.message; alertErr.classList.add('show'); }
   } catch { alertErr.textContent='Koneksi gagal.'; alertErr.classList.add('show'); }
 }
 
-// â”€â”€â”€ Change Password â”€â”€â”€
+// --- Password ---
 async function changePassword() {
   const alertErr=document.getElementById('pAlert');
   const alertOk =document.getElementById('pOk');
@@ -286,17 +323,17 @@ async function changePassword() {
       alertOk.textContent=d.message; alertOk.classList.add('show');
       document.getElementById('curPass').value='';
       document.getElementById('newPass').value='';
-      toast('Password diubah âœ“','ok');
+      toast('Password diubah \u2713','ok');
     } else { alertErr.textContent=d.message; alertErr.classList.add('show'); }
   } catch { alertErr.textContent='Koneksi gagal.'; alertErr.classList.add('show'); }
 }
 
-// â”€â”€â”€ Wallet List â”€â”€â”€
+// --- Wallet List ---
 const iMap = { dana:'public/dana.png', gopay:'public/gopay.png', shopeepay:'public/shopeepay.png', jago:'public/jago.png' };
 function getIcon(name) {
   const n=name.toLowerCase();
   for(const k of Object.keys(iMap)){if(n.includes(k))return `<img src="${iMap[k]}" style="width:28px;height:28px;border-radius:7px;object-fit:cover;border:1.5px solid rgba(0,0,0,0.1);" alt="${name}">`;}
-  const e=n.includes('saving')?'ðŸ·':'ðŸ’µ';
+  const e=n.includes('saving')?'\uD83D\uDC37':'\uD83D\uDCB5';
   const bg=n.includes('saving')?'#FFF8E7':'#F4F0FF';
   return `<div style="width:28px;height:28px;border-radius:7px;border:1.5px solid rgba(0,0,0,0.1);background:${bg};display:flex;align-items:center;justify-content:center;font-size:15px;">${e}</div>`;
 }
@@ -312,14 +349,14 @@ function renderWalletSettings() {
         <div class="wallet-settings-bal">${fmtS(w.balance)}</div>
       </div>
       <div class="wallet-settings-actions">
-        <button class="btn btn-ghost btn-xs" onclick="openWalletNameModal('${w.id}','${w.name.replace(/'/g,"\\'")}')">âœï¸ Nama</button>
-        <button class="btn btn-xs" onclick="openBalModal('${w.id}','${w.name.replace(/'/g,"\\'")}',${w.balance})">ðŸ’° Saldo</button>
+        <button class="btn btn-ghost btn-xs" onclick="openWalletNameModal('${w.id}','${w.name.replace(/'/g,"\\'")}')">&#x270F;&#xFE0F; Nama</button>
+        <button class="btn btn-xs" onclick="openBalModal('${w.id}','${w.name.replace(/'/g,"\\'")}',${w.balance})">&#x1F4B0; Saldo</button>
       </div>
     </div>
   `).join('');
 }
 
-// â”€â”€â”€ Wallet Name Modal â”€â”€â”€
+// --- Wallet Name Modal ---
 function openWalletNameModal(id, name) {
   document.getElementById('walletEditId').value=id;
   document.getElementById('walletNewName').value=name;
@@ -336,12 +373,12 @@ async function submitWalletName() {
   try {
     const res=await fetch('settings_actions.php?action=update_wallet',{method:'POST',body:fd});
     const d=await res.json();
-    if(d.success){ closeWalletNameModal(); toast('Nama dompet diperbarui âœ“','ok'); setTimeout(()=>location.reload(),1000); }
+    if(d.success){ closeWalletNameModal(); toast('Nama dompet diperbarui \u2713','ok'); setTimeout(()=>location.reload(),1000); }
     else { alertEl.textContent=d.message; alertEl.classList.add('show'); }
   } catch { alertEl.textContent='Koneksi gagal.'; alertEl.classList.add('show'); }
 }
 
-// â”€â”€â”€ Balance Modal â”€â”€â”€
+// --- Balance Modal ---
 function updateBalDisplay() {
   const el=document.getElementById('balDisplay');
   const v=parseInt(balRaw||'0',10);
@@ -367,18 +404,61 @@ async function submitBalance() {
   const btn=document.getElementById('balSubmitBtn');
   const balance=parseInt(balRaw||'0',10);
   const walletId=document.getElementById('balWalletId').value;
-  btn.disabled=true; btn.textContent='Menyimpanâ€¦';
+  btn.disabled=true; btn.textContent='Menyimpan\u2026';
   const fd=new FormData(); fd.append('walletId',walletId); fd.append('balance',balance);
   try {
     const res=await fetch('transaction_actions.php?action=set_balance',{method:'POST',body:fd});
     const d=await res.json();
-    if(d.success){ closeBalModal(); toast('Saldo diperbarui âœ“','ok'); setTimeout(()=>location.reload(),1000); }
+    if(d.success){ closeBalModal(); toast('Saldo diperbarui \u2713','ok'); setTimeout(()=>location.reload(),1000); }
     else { alertEl.textContent=d.message; alertEl.classList.add('show'); }
   } catch { alertEl.textContent='Koneksi gagal.'; alertEl.classList.add('show'); }
-  btn.disabled=false; btn.textContent='ðŸ’¾ Simpan Saldo';
+  btn.disabled=false; btn.textContent='\uD83D\uDCBE Simpan Saldo';
 }
 
-// â”€â”€â”€ Toast â”€â”€â”€
+// --- Gemini API Key ---
+async function loadGeminiKeyStatus() {
+  try {
+    const res = await fetch('settings_actions.php?action=get_setting&key=gemini_api_key');
+    const d   = await res.json();
+    const el  = document.getElementById('aiStatus');
+    if (d.value && d.value.trim()) {
+      el.textContent = '\u2705 Terhubung \u2014 AI categorization aktif';
+      el.style.color = 'var(--mint)';
+      document.getElementById('geminiApiKey').placeholder = d.value.slice(0,8) + '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+    } else {
+      el.textContent = 'Belum dikonfigurasi \u2014 pakai keyword matching';
+      el.style.color = '';
+    }
+  } catch { document.getElementById('aiStatus').textContent = 'Gagal mengecek status'; }
+}
+
+async function saveGeminiKey() {
+  const alertErr = document.getElementById('aiAlert');
+  const alertOk  = document.getElementById('aiOk');
+  alertErr.classList.remove('show'); alertOk.classList.remove('show');
+  const key = document.getElementById('geminiApiKey').value.trim();
+  const fd  = new FormData();
+  fd.append('key', 'gemini_api_key');
+  fd.append('value', key);
+  try {
+    const res = await fetch('settings_actions.php?action=save_setting', { method:'POST', body:fd });
+    const d   = await res.json();
+    if (d.success) {
+      alertOk.textContent = key ? '\u2705 API key disimpan!' : 'API key dihapus.';
+      alertOk.classList.add('show');
+      toast(key ? 'Gemini AI aktif \u2713' : 'API key dihapus', 'ok');
+      loadGeminiKeyStatus();
+    } else {
+      alertErr.textContent = d.message;
+      alertErr.classList.add('show');
+    }
+  } catch {
+    alertErr.textContent = 'Koneksi gagal.';
+    alertErr.classList.add('show');
+  }
+}
+
+// --- Toast ---
 function toast(msg,type='') {
   const c=document.getElementById('toastWrap');
   const t=document.createElement('div');
@@ -387,11 +467,8 @@ function toast(msg,type='') {
   setTimeout(()=>t.remove(),2600);
 }
 
-// â”€â”€â”€ Init â”€â”€â”€
+// --- Init ---
 initToggles(); renderWalletSettings(); loadGeminiKeyStatus();
 </script>
 </body>
 </html>
-
-
-
