@@ -73,20 +73,19 @@ include '_head.php';
 
 </div><!-- /wrap -->
 
-<!-- Bottom Nav -->
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-home" onclick="scrollToTop()">
     <div class="nav-icon">🏠</div>
     <div class="nav-label">Beranda</div>
   </div>
+  <a class="nav-item" href="flow.php">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">Aliran</div>
+  </a>
+  <div class="nav-fab" onclick="openAddModal()">＋</div>
   <div class="nav-item" id="nav-history" onclick="scrollToHistory()">
     <div class="nav-icon">📋</div>
     <div class="nav-label">Riwayat</div>
-  </div>
-  <div class="nav-fab" onclick="openAddModal()">＋</div>
-  <div class="nav-item" id="nav-wallet" onclick="scrollToWallet()">
-    <div class="nav-icon">💳</div>
-    <div class="nav-label">Dompet</div>
   </div>
   <a class="nav-item" href="settings.php">
     <div class="nav-icon">⚙️</div>
@@ -123,7 +122,10 @@ include '_head.php';
       <div id="addAlert" class="alert alert-err"></div>
 
       <!-- Wallet From -->
-      <div class="wallet-selector-label">Dari Dompet</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem">
+        <div class="wallet-selector-label" style="margin-bottom:0">Dari Dompet</div>
+        <div class="mini-eye-btn" id="modalEyeBtn" onclick="toggleModalBal()" title="Toggle tampilkan saldo">👁</div>
+      </div>
       <div class="wallet-selector" id="fromWalletSel"></div>
       <input type="hidden" id="selectedFromWallet">
 
@@ -251,6 +253,7 @@ let currentType = 'EXPENSE';
 let amountRaw   = '';
 let balRaw      = '';
 let useKeypad   = true;
+let modalBalVisible = true; // local toggle inside add modal
 
 // ═══════════════════════════════════════
 //  INIT FROM LOCALSTORAGE
@@ -258,6 +261,7 @@ let useKeypad   = true;
 function initPrefs() {
   const vis = localStorage.getItem(LS_VIS);
   state.visible = vis === null ? true : vis === '1';
+  modalBalVisible = state.visible; // init modal visibility from global state
   document.getElementById('eyeBtn').textContent = state.visible ? '👁' : '🙈';
 
   const kp = localStorage.getItem(LS_KEYPAD);
@@ -268,6 +272,13 @@ function initPrefs() {
 function applyKeypadMode() {
   document.getElementById('numpadWrap').style.display    = useKeypad ? 'block' : 'none';
   document.getElementById('nativeAmtWrap').style.display = useKeypad ? 'none'  : 'block';
+}
+
+// Toggle balance visibility inside modal only
+function toggleModalBal() {
+  modalBalVisible = !modalBalVisible;
+  document.getElementById('modalEyeBtn').textContent = modalBalVisible ? '👁' : '🙈';
+  renderWalletSelectors(); // re-render with new visibility
 }
 
 // ═══════════════════════════════════════
@@ -500,8 +511,10 @@ function renderWalletSelectors() {
       let icon='';
       for (const k of Object.keys(iMap)){if(n.includes(k)){icon=`<img src="${iMap[k]}" class="wsel-emoji" alt="${w.name}">`;break;}}
       if(!icon){const e=n.includes('saving')?'🐷':'💵';icon=`<div class="wsel-emoji">${e}</div>`;}
-      // Show balance if available
-      const balStr = w.balance !== undefined ? `<span class="wsel-bal">${fmtS(w.balance)}</span>` : '';
+      // Show balance based on modal-local visibility toggle
+      const balStr = (w.balance !== undefined && modalBalVisible)
+        ? `<span class="wsel-bal">${fmtS(w.balance)}</span>`
+        : (w.balance !== undefined ? `<span class="wsel-bal">••••</span>` : '');
       return `<div class="wsel-item${i===defaultIdx?' selected':''}" onclick="selectWallet('${cid}','${hid}','${w.id}',this)">${icon}<span class="wsel-name">${w.name}</span>${balStr}</div>`;
     }).join('');
     if (source[defaultIdx]) document.getElementById(hid).value = source[defaultIdx].id;
@@ -540,6 +553,9 @@ function openAddModal() {
   document.getElementById('toWalletBlock').style.display='none';
   if(document.getElementById('nativeAmt'))document.getElementById('nativeAmt').value='';
   applyKeypadMode();
+  // Sync modal balance visibility with global state, update eye icon
+  modalBalVisible = state.visible;
+  document.getElementById('modalEyeBtn').textContent = modalBalVisible ? '👁' : '🙈';
   renderWalletSelectors();
   document.getElementById('addOverlay').classList.add('open');
 }
