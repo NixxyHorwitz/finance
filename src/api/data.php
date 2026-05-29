@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 
 // Wallets
-$s = $pdo->prepare("SELECT * FROM Wallet WHERE userId = ? ORDER BY FIELD(name,'Cash','Dana','Gopay','ShopeePay','Savings')");
+$s = $pdo->prepare("SELECT id, name, balance FROM Wallet WHERE userId = ? ORDER BY sort_order ASC, name ASC");
 $s->execute([$userId]);
 $wallets = $s->fetchAll();
 

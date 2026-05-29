@@ -79,6 +79,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             ->execute([$name, $walletId, $userId]);
         echo json_encode(['success' => true, 'message' => 'Nama wallet diperbarui.']);
 
+    } elseif ($action === 'update_wallet_order') {
+        $orderJson = $_POST['order'] ?? '[]';
+        $order = json_decode($orderJson, true);
+        if (is_array($order)) {
+            $pdo->beginTransaction();
+            try {
+                $stmt = $pdo->prepare("UPDATE Wallet SET sort_order = ? WHERE id = ? AND userId = ?");
+                foreach ($order as $index => $walletId) {
+                    $stmt->execute([$index + 1, $walletId, $userId]);
+                }
+                $pdo->commit();
+                echo json_encode(['success' => true]);
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                echo json_encode(['success' => false, 'message' => 'Gagal menyimpan urutan.']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Format salah.']);
+        }
+
     } elseif ($action === 'save_setting') {
         $key   = trim($_POST['key']   ?? '');
         $value = trim($_POST['value'] ?? '');

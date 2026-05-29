@@ -2,7 +2,7 @@
 require_once 'db.php';
 requireLogin();
 
-$sw = $pdo->prepare("SELECT id, name, balance FROM Wallet WHERE userId = ? ORDER BY FIELD(name,'Cash','Dana','Gopay','ShopeePay','Bank Jago','Savings')");
+$sw = $pdo->prepare("SELECT id, name, balance FROM Wallet WHERE userId = ? ORDER BY sort_order ASC, name ASC");
 $sw->execute([$_SESSION['user_id']]);
 $wallets = $sw->fetchAll();
 foreach ($wallets as &$w) $w['balance'] = (float)$w['balance'];

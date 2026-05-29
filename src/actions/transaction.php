@@ -20,28 +20,35 @@ const CATEGORIES = [
 ];
 
 // ═══════════════════════════════════════════════════════════
-//  GEMINI API — primary categorizer
+//  OPENAI API — primary categorizer
 // ═══════════════════════════════════════════════════════════
-function callGemini(string $description, string $apiKey): ?string {
+function callOpenAI(string $description, string $apiKey): ?string {
     $catList = implode(', ', CATEGORIES);
-    $prompt  = "Kamu adalah sistem kategorisasi transaksi keuangan untuk pengguna Indonesia Gen-Z. " .
-               "Kategorikan deskripsi transaksi berikut ke dalam SATU kategori yang paling sesuai.\n\n" .
-               "Kategori: {$catList}\n\n" .
-               "Deskripsi: \"{$description}\"\n\n" .
+    $prompt  = "Kamu adalah sistem kategorisasi transaksi keuangan untuk pengguna Indonesia Gen-Z.\n" .
+               "Kategorikan deskripsi transaksi berikut ke dalam SATU kategori yang paling sesuai.\n" .
+               "Kategori: {$catList}\n" .
+               "Deskripsi: \"{$description}\"\n" .
                "Jawab HANYA nama kategori persis seperti di atas. Tidak ada penjelasan lain.";
 
     $payload = json_encode([
-        'contents'         => [['parts' => [['text' => $prompt]]]],
-        'generationConfig' => ['temperature' => 0, 'maxOutputTokens' => 30],
+        'model'       => 'gpt-4o-mini',
+        'messages'    => [
+            ['role' => 'user', 'content' => $prompt]
+        ],
+        'temperature' => 0,
+        'max_tokens'  => 30,
     ]);
 
-    $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' . $apiKey;
+    $url = 'https://api.openai.com/v1/chat/completions';
 
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => $payload,
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $apiKey
+        ],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 6,
         CURLOPT_CONNECTTIMEOUT => 3,
@@ -53,7 +60,7 @@ function callGemini(string $description, string $apiKey): ?string {
     if ($httpCode !== 200 || !$resp) return null;
 
     $data = json_decode($resp, true);
-    $text = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+    $text = trim($data['choices'][0]['message']['content'] ?? '');
 
     // Exact match
     if (in_array($text, CATEGORIES)) return $text;
@@ -250,21 +257,21 @@ function upsertCategory(string $name, PDO $pdo): string {
     return $newId;
 }
 
+
 // ═══════════════════════════════════════════════════════════
-//  MAIN CATEGORIZE — Gemini first, keyword fallback
+//  MAIN CATEGORIZE — OpenAI first, keyword fallback
 // ═══════════════════════════════════════════════════════════
 function smartCategorize(string $description, PDO $pdo, string $userId): string {
-    // 1. Try Gemini API if user has a key configured
-    $s = $pdo->prepare("SELECT value FROM UserSetting WHERE userId = ? AND `key` = 'gemini_api_key'");
-    $s->execute([$userId]);
-    $row = $s->fetch();
+    // 1. Try OpenAI API if configured in .env
+    $envPath = __DIR__ . '/../../.env';
+    $env = file_exists($envPath) ? parse_ini_file($envPath) : [];
+    $openAiKey = $env['OPENAI_API_KEY'] ?? null;
 
-    if ($row && !empty(trim($row['value']))) {
-        $geminiCat = callGemini($description, trim($row['value']));
-        if ($geminiCat) {
-            return upsertCategory($geminiCat, $pdo);
+    if ($openAiKey && !empty(trim($openAiKey))) {
+        $aiCat = callOpenAI($description, trim($openAiKey));
+        if ($aiCat) {
+            return upsertCategory($aiCat, $pdo);
         }
-        // Gemini failed/timeout → fall through to keyword
     }
 
     // 2. Keyword scoring fallback

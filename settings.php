@@ -3,7 +3,7 @@ require_once 'db.php';
 requireLogin();
 
 $userId = $_SESSION['user_id'];
-$sw = $pdo->prepare("SELECT * FROM Wallet WHERE userId = ? ORDER BY FIELD(name,'Cash','Dana','Gopay','ShopeePay','Bank Jago','Savings')");
+$sw = $pdo->prepare("SELECT id, name, balance FROM Wallet WHERE userId = ? ORDER BY sort_order ASC, name ASC");
 $sw->execute([$userId]);
 $wallets = $sw->fetchAll();
 foreach ($wallets as &$w) $w['balance'] = (float)$w['balance'];
@@ -122,18 +122,7 @@ include 'src/components/_head.php';
     </div>
   </div>
 
-  <!-- Integrasi AI -->
-  <div class="settings-section">
-    <div class="settings-section-title">Integrasi AI &#x2728;</div>
-    <div class="settings-card">
-
-      <div class="settings-item" id="aiRow">
-        <div class="settings-item-left">
-          <div class="settings-icon" style="background:#E8F5E9;">&#x2728;</div>
-          <div>
-            <div class="settings-label">Gemini API Key</div>
-            <div class="settings-sub" id="aiStatus">Mengecek&#x2026;</div>
-          </div>
+  
         </div>
         <button class="btn btn-ghost btn-xs" onclick="toggleEdit('aiEdit')">Edit</button>
       </div>
@@ -328,7 +317,7 @@ function getIcon(name) {
 function renderWalletSettings() {
   const list=document.getElementById('walletSettingsList');
   if (!WALLETS.length) { list.innerHTML='<div class="empty" style="padding:2rem;text-align:center;color:var(--muted)">Belum ada dompet</div>'; return; }
-  list.innerHTML = WALLETS.map(w=>`
+  list.innerHTML = WALLETS.map((w, i)=>`
     <div class="wallet-settings-item">
       ${getIcon(w.name)}
       <div class="wallet-settings-info">
@@ -336,11 +325,38 @@ function renderWalletSettings() {
         <div class="wallet-settings-bal">${fmtS(w.balance)}</div>
       </div>
       <div class="wallet-settings-actions">
+        <div style="display:flex; flex-direction:column; gap:2px; margin-right:4px;">
+          <button class="btn btn-ghost btn-xs" style="padding:0 4px;font-size:10px" onclick="moveWallet(${i}, -1)" ${i===0?'disabled':''}>&#x25B2;</button>
+          <button class="btn btn-ghost btn-xs" style="padding:0 4px;font-size:10px" onclick="moveWallet(${i}, 1)" ${i===WALLETS.length-1?'disabled':''}>&#x25BC;</button>
+        </div>
         <button class="btn btn-ghost btn-xs" onclick="openWalletNameModal('${w.id}','${w.name.replace(/'/g,"\\'")}')">&#x270F;&#xFE0F; Nama</button>
         <button class="btn btn-xs" onclick="openBalModal('${w.id}','${w.name.replace(/'/g,"\\'")}',${w.balance})">&#x1F4B0; Saldo</button>
       </div>
     </div>
   `).join('');
+}
+
+async function moveWallet(idx, dir) {
+  if (idx + dir < 0 || idx + dir >= WALLETS.length) return;
+  // Swap
+  const temp = WALLETS[idx];
+  WALLETS[idx] = WALLETS[idx + dir];
+  WALLETS[idx + dir] = temp;
+  
+  renderWalletSettings(); // Re-render UI immediately
+  
+  // Save to backend
+  const order = WALLETS.map(w => w.id);
+  const fd = new URLSearchParams();
+  fd.append('order', JSON.stringify(order));
+  try {
+    const res = await fetch('src/actions/settings.php?action=update_wallet_order', {
+      method: 'POST',
+      body: fd
+    });
+    const d = await res.json();
+    if (!d.success) toast(d.message, 'err');
+  } catch { toast('Gagal menyimpan urutan', 'err'); }
 }
 
 // --- Wallet Name Modal ---
