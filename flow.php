@@ -297,13 +297,16 @@ function renderFlow() {
 function drawAnimatedLines(pairs, wallets, cats, total) {
   const svg    = $('flowSvg');
   const midEl  = $('flowMid');
+  
+  // Reset height to let it naturally stretch, preventing infinite growth loop on resize
+  midEl.style.height = ''; 
+  
   const midRect= midEl.getBoundingClientRect();
   const scrollY= window.scrollY || document.documentElement.scrollTop;
 
-  const wrapH  = $('flowInner').offsetHeight;
-  svg.setAttribute('viewBox', `0 0 60 ${wrapH}`);
-  svg.setAttribute('height', wrapH);
-  midEl.style.height = wrapH + 'px';
+  const midH  = midRect.height;
+  svg.setAttribute('viewBox', `0 0 60 ${midH}`);
+  svg.setAttribute('height', '100%');
   svg.innerHTML = '';
 
   // Group pairs by wallet for stagger
@@ -406,7 +409,14 @@ function toast(msg, type='') {
   setTimeout(()=>t.remove(),2600);
 }
 
-window.addEventListener('resize', () => { if (allData) renderFlow(); });
+let lastInnerWidth = window.innerWidth;
+window.addEventListener('resize', () => { 
+  // Hanya render ulang jika lebar berubah (mencegah render berkali-kali saat scroll di mobile browser)
+  if (window.innerWidth !== lastInnerWidth) {
+    lastInnerWidth = window.innerWidth;
+    if (allData) renderFlow(); 
+  }
+});
 
 // After saving a record via modal, reload flow
 window._afterRecordSaved = loadFlow;
