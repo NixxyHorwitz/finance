@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'db.php';
 
 header('Content-Type: application/json');
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([$userId, $username, $hash]);
 
             // Default wallets
-            $wallets = ['Cash', 'Dana', 'Gopay', 'ShopeePay', 'Savings'];
+            $wallets = ['Cash', 'Dana', 'Gopay', 'ShopeePay', 'Bank Jago', 'Savings'];
             $stmtW   = $pdo->prepare("INSERT INTO Wallet (id, userId, name, balance) VALUES (?, ?, ?, 0)");
             foreach ($wallets as $w) {
                 $stmtW->execute([generateUUID(), $userId, $w]);
@@ -68,3 +68,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+

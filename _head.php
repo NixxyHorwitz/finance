@@ -136,6 +136,7 @@ input::placeholder { color: var(--muted); }
 .wallet-card.gopay     { background:linear-gradient(135deg,#F0FFF6,#D4FFE9); }
 .wallet-card.shopeepay { background:linear-gradient(135deg,#FFF4F0,#FFE5D9); }
 .wallet-card.savings   { background:linear-gradient(135deg,#FFF8E7,#FFEFC0); }
+.wallet-card.jago      { background:linear-gradient(135deg,#E8FFF0,#C8FFD9); }
 .wallet-card.cash      { background:linear-gradient(135deg,#F4F0FF,#E9E0FF); }
 .wallet-icon  { width:30px; height:30px; border-radius:8px; object-fit:cover; border:1.5px solid rgba(0,0,0,0.1); margin-bottom:0.5rem; display:block; }
 .wallet-emoji { width:30px; height:30px; border-radius:8px; border:1.5px solid rgba(0,0,0,0.1); margin-bottom:0.5rem; display:flex; align-items:center; justify-content:center; font-size:16px; }
@@ -319,4 +320,5 @@ input::placeholder { color: var(--muted); }
 .cat-detail-title { font-size:0.85rem; font-weight:800; }
 .cat-detail-sub   { font-size:0.68rem; color:#666; margin-top:1px; }
 </style>
+
 

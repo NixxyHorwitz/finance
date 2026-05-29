@@ -1,7 +1,7 @@
-<?php
+﻿<?php
 require_once 'db.php';
 requireLogin();
-$pageTitle = 'Aliran Dana – Neofinance';
+$pageTitle = 'Aliran Dana â€“ Neofinance';
 include '_head.php';
 ?>
 <body>
@@ -9,8 +9,8 @@ include '_head.php';
 <div class="page-wrap">
 
   <div class="page-header">
-    <a href="index.php" class="btn btn-ghost btn-xs">←</a>
-    <div class="page-title">💸 Aliran Dana</div>
+    <a href="index.php" class="btn btn-ghost btn-xs">â†</a>
+    <div class="page-title">ðŸ’¸ Aliran Dana</div>
   </div>
 
   <!-- Period tabs -->
@@ -24,13 +24,13 @@ include '_head.php';
   <div id="flowTotalCard" class="flow-total-card">
     <div>
       <div class="flow-total-label">Total Pengeluaran</div>
-      <div class="flow-total-amt" id="flowTotalAmt">Memuat…</div>
+      <div class="flow-total-amt" id="flowTotalAmt">Memuatâ€¦</div>
     </div>
-    <div style="font-size:2.5rem;opacity:0.7">💸</div>
+    <div style="font-size:2.5rem;opacity:0.7">ðŸ’¸</div>
   </div>
 
   <!-- Flow diagram -->
-  <div class="sec-label mb-1" style="display:block">Dompet → Kategori</div>
+  <div class="sec-label mb-1" style="display:block">Dompet â†’ Kategori</div>
   <div class="flow-wrap" id="flowWrap">
     <div class="flow-col-left"  id="flowWallets"></div>
     <div class="flow-svg-mid"   id="flowSvgMid"><svg id="flowSvg"></svg></div>
@@ -38,7 +38,7 @@ include '_head.php';
   </div>
 
   <p style="font-size:0.7rem;color:var(--muted);text-align:center;margin-bottom:1rem;">
-    Tap kategori untuk lihat detailnya 👆
+    Tap kategori untuk lihat detailnya ðŸ‘†
   </p>
 
   <!-- Category detail drill-down -->
@@ -49,17 +49,17 @@ include '_head.php';
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
   <a class="nav-item" href="index.php">
-    <div class="nav-icon">🏠</div>
+    <div class="nav-icon">ðŸ </div>
     <div class="nav-label">Beranda</div>
   </a>
   <a class="nav-item active" href="flow.php">
-    <div class="nav-icon">📊</div>
+    <div class="nav-icon">ðŸ“Š</div>
     <div class="nav-label">Aliran</div>
   </a>
-  <a class="nav-fab" href="index.php#add" onclick="sessionStorage.setItem('openAdd','1')">＋</a>
+  <a class="nav-fab" href="index.php#add" onclick="sessionStorage.setItem('openAdd','1')">ï¼‹</a>
   <div class="nav-item" style="flex:1"></div>
   <a class="nav-item" href="settings.php">
-    <div class="nav-icon">⚙️</div>
+    <div class="nav-icon">âš™ï¸</div>
     <div class="nav-label">Pengaturan</div>
   </a>
 </nav>
@@ -81,31 +81,31 @@ const fmtD = d => new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'s
 const esc  = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 const catEmoji = {
-  makanan:'🍔', makan:'🍔', food:'🍔', resto:'🍔', warung:'🍔',
-  transport:'🚗', bensin:'⛽', ojek:'🛵', parkir:'🅿️', grab:'🛵', gojek:'🛵',
-  belanja:'🛍️', shop:'🛍️',
-  hiburan:'🎮', game:'🎮', nonton:'🎬',
-  kesehatan:'💊', obat:'💊', dokter:'👨‍⚕️',
-  tagihan:'📄', listrik:'⚡', air:'💧', internet:'📶',
-  pendidikan:'📚', buku:'📖',
-  investasi:'📈',
+  makanan:'ðŸ”', makan:'ðŸ”', food:'ðŸ”', resto:'ðŸ”', warung:'ðŸ”',
+  transport:'ðŸš—', bensin:'â›½', ojek:'ðŸ›µ', parkir:'ðŸ…¿ï¸', grab:'ðŸ›µ', gojek:'ðŸ›µ',
+  belanja:'ðŸ›ï¸', shop:'ðŸ›ï¸',
+  hiburan:'ðŸŽ®', game:'ðŸŽ®', nonton:'ðŸŽ¬',
+  kesehatan:'ðŸ’Š', obat:'ðŸ’Š', dokter:'ðŸ‘¨â€âš•ï¸',
+  tagihan:'ðŸ“„', listrik:'âš¡', air:'ðŸ’§', internet:'ðŸ“¶',
+  pendidikan:'ðŸ“š', buku:'ðŸ“–',
+  investasi:'ðŸ“ˆ',
 };
 function getCatEmoji(name) {
   const n = (name||'').toLowerCase();
   for (const [k,v] of Object.entries(catEmoji)) { if(n.includes(k)) return v; }
-  return '📌';
+  return 'ðŸ“Œ';
 }
 
-const iMap = { dana:'public/dana.png', gopay:'public/gopay.png', shopeepay:'public/shopeepay.png' };
+const iMap = { dana:'public/dana.png', gopay:'public/gopay.png', shopeepay:'public/shopeepay.png', jago:'public/jago.png' };
 function getWalletEmoji(name) {
   const n=(name||'').toLowerCase();
-  if(n.includes('saving'))return'🐷';
-  return '💵';
+  if(n.includes('saving'))return'ðŸ·';
+  return 'ðŸ’µ';
 }
 
-// ─── Load ───
+// â”€â”€â”€ Load â”€â”€â”€
 async function loadFlow() {
-  document.getElementById('flowTotalAmt').textContent = 'Memuat…';
+  document.getElementById('flowTotalAmt').textContent = 'Memuatâ€¦';
   document.getElementById('flowWallets').innerHTML  = '';
   document.getElementById('flowCats').innerHTML     = '';
   document.getElementById('flowSvg').innerHTML      = '';
@@ -127,7 +127,7 @@ function setPeriod(days, btn) {
   loadFlow();
 }
 
-// ─── Render ───
+// â”€â”€â”€ Render â”€â”€â”€
 function renderFlow() {
   const expenses = allData.transactions.filter(t => t.type === 'EXPENSE');
   const total    = expenses.reduce((s,t) => s + t.amount, 0);
@@ -159,7 +159,7 @@ function renderFlow() {
   });
   const cats = Object.values(catMap).sort((a,b) => b.amount - a.amount);
 
-  // Wallet→Category pairs
+  // Walletâ†’Category pairs
   const pairMap = {};
   expenses.forEach(t => {
     const cat = t.categoryName || 'Lainnya';
@@ -203,7 +203,7 @@ function renderFlow() {
   });
 }
 
-// ─── SVG Lines ───
+// â”€â”€â”€ SVG Lines â”€â”€â”€
 function drawLines(pairs, wallets, cats, total) {
   const svg    = document.getElementById('flowSvg');
   const midEl  = document.getElementById('flowSvgMid');
@@ -250,7 +250,7 @@ function drawLines(pairs, wallets, cats, total) {
   });
 }
 
-// ─── Category detail ───
+// â”€â”€â”€ Category detail â”€â”€â”€
 function showCatDetail(catName, idx) {
   if (activeCat === catName) { closeCatDetail(); return; }
   activeCat = catName;
@@ -271,16 +271,16 @@ function showCatDetail(catName, idx) {
       <div class="cat-detail-head">
         <div>
           <div class="cat-detail-title">${getCatEmoji(catName)} ${esc(catName)}</div>
-          <div class="cat-detail-sub">${txs.length} transaksi · Total ${fmtR(catTotal)}</div>
+          <div class="cat-detail-sub">${txs.length} transaksi Â· Total ${fmtR(catTotal)}</div>
         </div>
-        <button class="btn btn-ghost btn-xs" onclick="closeCatDetail()">✕</button>
+        <button class="btn btn-ghost btn-xs" onclick="closeCatDetail()">âœ•</button>
       </div>
       ${txs.map(t => `
         <div class="tx-item">
-          <div class="tx-icon expense">💸</div>
+          <div class="tx-icon expense">ðŸ’¸</div>
           <div class="tx-body">
             <div class="tx-desc">${esc(t.description)}</div>
-            <div class="tx-meta">${fmtD(t.date)} · ${esc(t.walletName)}</div>
+            <div class="tx-meta">${fmtD(t.date)} Â· ${esc(t.walletName)}</div>
           </div>
           <div class="tx-right">
             <span class="tx-amt expense">-${fmtS(t.amount)}</span>
@@ -315,3 +315,4 @@ loadFlow();
 </script>
 </body>
 </html>
+

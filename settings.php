@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'db.php';
 requireLogin();
 
@@ -8,7 +8,7 @@ $sw->execute([$userId]);
 $wallets = $sw->fetchAll();
 $walletsJson = json_encode($wallets);
 
-$pageTitle = 'Pengaturan – Neofinance';
+$pageTitle = 'Pengaturan â€“ Neofinance';
 include '_head.php';
 ?>
 <body>
@@ -17,11 +17,11 @@ include '_head.php';
 
   <!-- Header -->
   <div class="page-header">
-    <a href="index.php" class="btn btn-ghost btn-xs" style="padding:0.38rem 0.55rem;">←</a>
+    <a href="index.php" class="btn btn-ghost btn-xs" style="padding:0.38rem 0.55rem;">â†</a>
     <div class="page-title">Pengaturan</div>
   </div>
 
-  <!-- ─── Profil ─── -->
+  <!-- â”€â”€â”€ Profil â”€â”€â”€ -->
   <div class="settings-section">
     <div class="settings-section-title">Profil</div>
     <div class="settings-card">
@@ -29,7 +29,7 @@ include '_head.php';
       <!-- Username -->
       <div class="settings-item" id="uRow">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#EEF1FF;">👤</div>
+          <div class="settings-icon" style="background:#EEF1FF;">ðŸ‘¤</div>
           <div>
             <div class="settings-label">Username</div>
             <div class="settings-sub" id="curUsername"><?= htmlspecialchars($_SESSION['username']) ?></div>
@@ -49,7 +49,7 @@ include '_head.php';
       <!-- Password -->
       <div class="settings-item" id="pRow">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#EDFFF9;">🔑</div>
+          <div class="settings-icon" style="background:#EDFFF9;">ðŸ”‘</div>
           <div>
             <div class="settings-label">Password</div>
             <div class="settings-sub">Ubah password akun</div>
@@ -62,7 +62,7 @@ include '_head.php';
         <div id="pOk" class="alert alert-ok"></div>
         <div class="fgroup">
           <label>Password Saat Ini</label>
-          <input type="password" id="curPass" placeholder="••••••">
+          <input type="password" id="curPass" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢">
         </div>
         <div class="fgroup" style="margin-bottom:0.5rem">
           <label>Password Baru</label>
@@ -74,7 +74,7 @@ include '_head.php';
     </div>
   </div>
 
-  <!-- ─── Preferensi ─── -->
+  <!-- â”€â”€â”€ Preferensi â”€â”€â”€ -->
   <div class="settings-section">
     <div class="settings-section-title">Preferensi</div>
     <div class="settings-card">
@@ -82,7 +82,7 @@ include '_head.php';
       <!-- Balance visibility -->
       <div class="settings-item">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#FFF8E7;">👁</div>
+          <div class="settings-icon" style="background:#FFF8E7;">ðŸ‘</div>
           <div>
             <div class="settings-label">Tampilkan Saldo</div>
             <div class="settings-sub">Sembunyikan nominal saldo</div>
@@ -97,7 +97,7 @@ include '_head.php';
       <!-- Input mode -->
       <div class="settings-item">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#F5EEFF;">🔢</div>
+          <div class="settings-icon" style="background:#F5EEFF;">ðŸ”¢</div>
           <div>
             <div class="settings-label">Mode Input Keypad</div>
             <div class="settings-sub">Gunakan keypad kustom saat input nominal</div>
@@ -112,7 +112,7 @@ include '_head.php';
     </div>
   </div>
 
-  <!-- ─── Dompet ─── -->
+  <!-- â”€â”€â”€ Dompet â”€â”€â”€ -->
   <div class="settings-section">
     <div class="settings-section-title">Dompet</div>
     <div class="settings-card" id="walletSettingsList">
@@ -120,13 +120,13 @@ include '_head.php';
     </div>
   </div>
 
-  <!-- ─── Danger Zone ─── -->
+  <!-- â”€â”€â”€ Danger Zone â”€â”€â”€ -->
   <div class="settings-section">
     <div class="settings-section-title">Sesi</div>
     <div class="settings-card">
       <div class="settings-item">
         <div class="settings-item-left">
-          <div class="settings-icon" style="background:#FFF0F0;">🚪</div>
+          <div class="settings-icon" style="background:#FFF0F0;">ðŸšª</div>
           <div>
             <div class="settings-label">Keluar</div>
             <div class="settings-sub">Logout dari akun ini</div>
@@ -142,14 +142,14 @@ include '_head.php';
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
   <a class="nav-item" href="index.php">
-    <div class="nav-icon">🏠</div>
+    <div class="nav-icon">ðŸ </div>
     <div class="nav-label">Beranda</div>
   </a>
   <div class="nav-item" style="flex:1"></div>
-  <div class="nav-fab" onclick="location.href='index.php'">＋</div>
+  <div class="nav-fab" onclick="location.href='index.php'">ï¼‹</div>
   <div class="nav-item" style="flex:1"></div>
   <a class="nav-item active" href="settings.php">
-    <div class="nav-icon">⚙️</div>
+    <div class="nav-icon">âš™ï¸</div>
     <div class="nav-label">Pengaturan</div>
   </a>
 </nav>
@@ -157,7 +157,7 @@ include '_head.php';
 <!-- Toast -->
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- ═══ Modal: Set Balance Wallet ═══ -->
+<!-- â•â•â• Modal: Set Balance Wallet â•â•â• -->
 <div class="overlay" id="balOverlay" onclick="if(event.target===this)closeBalModal()">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -166,7 +166,7 @@ include '_head.php';
         <div class="modal-title">Atur Saldo</div>
         <div id="balModalSub" style="font-size:0.72rem;color:var(--muted);margin-top:2px;"></div>
       </div>
-      <span class="modal-close" onclick="closeBalModal()">✕</span>
+      <span class="modal-close" onclick="closeBalModal()">âœ•</span>
     </div>
     <div class="modal-body">
       <div id="balAlert" class="alert alert-err"></div>
@@ -193,21 +193,21 @@ include '_head.php';
         <button class="nk" onclick="balNumpad(8)">8</button>
         <button class="nk" onclick="balNumpad(9)">9</button>
         <button class="nk nk-0" onclick="balNumpad(0)">0</button>
-        <button class="nk nk-del" onclick="balNumpadDel()">⌫</button>
+        <button class="nk nk-del" onclick="balNumpadDel()">âŒ«</button>
       </div>
       <input type="hidden" id="balWalletId">
-      <button class="btn btn-full btn-lg" id="balSubmitBtn" onclick="submitBalance()" style="margin-top:0.5rem;">💾 Simpan Saldo</button>
+      <button class="btn btn-full btn-lg" id="balSubmitBtn" onclick="submitBalance()" style="margin-top:0.5rem;">ðŸ’¾ Simpan Saldo</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ Modal: Edit Wallet Name ═══ -->
+<!-- â•â•â• Modal: Edit Wallet Name â•â•â• -->
 <div class="overlay" id="walletNameOverlay" onclick="if(event.target===this)closeWalletNameModal()">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-head">
       <div class="modal-title">Edit Nama Dompet</div>
-      <span class="modal-close" onclick="closeWalletNameModal()">✕</span>
+      <span class="modal-close" onclick="closeWalletNameModal()">âœ•</span>
     </div>
     <div class="modal-body">
       <div id="wnAlert" class="alert alert-err"></div>
@@ -234,7 +234,7 @@ const fmtS = n => {
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 let balRaw = '';
 
-// ─── Init toggles from localStorage ───
+// â”€â”€â”€ Init toggles from localStorage â”€â”€â”€
 function initToggles() {
   const vis = localStorage.getItem(LS_VIS);
   document.getElementById('toggleVis').checked = vis===null ? true : vis==='1';
@@ -244,16 +244,16 @@ function initToggles() {
 
 function savePref(key, val) {
   localStorage.setItem(key, val ? '1' : '0');
-  toast(val ? 'Diaktifkan ✓' : 'Dinonaktifkan', 'ok');
+  toast(val ? 'Diaktifkan âœ“' : 'Dinonaktifkan', 'ok');
 }
 
-// ─── Toggle inline edit ───
+// â”€â”€â”€ Toggle inline edit â”€â”€â”€
 function toggleEdit(id) {
   const el=document.getElementById(id);
   el.classList.toggle('open');
 }
 
-// ─── Change Username ───
+// â”€â”€â”€ Change Username â”€â”€â”€
 async function changeUsername() {
   const alertErr=document.getElementById('uAlert');
   const alertOk =document.getElementById('uOk');
@@ -266,12 +266,12 @@ async function changeUsername() {
     if(d.success){
       document.getElementById('curUsername').textContent=username;
       alertOk.textContent=d.message; alertOk.classList.add('show');
-      toast('Username diubah ✓','ok');
+      toast('Username diubah âœ“','ok');
     } else { alertErr.textContent=d.message; alertErr.classList.add('show'); }
   } catch { alertErr.textContent='Koneksi gagal.'; alertErr.classList.add('show'); }
 }
 
-// ─── Change Password ───
+// â”€â”€â”€ Change Password â”€â”€â”€
 async function changePassword() {
   const alertErr=document.getElementById('pAlert');
   const alertOk =document.getElementById('pOk');
@@ -286,17 +286,17 @@ async function changePassword() {
       alertOk.textContent=d.message; alertOk.classList.add('show');
       document.getElementById('curPass').value='';
       document.getElementById('newPass').value='';
-      toast('Password diubah ✓','ok');
+      toast('Password diubah âœ“','ok');
     } else { alertErr.textContent=d.message; alertErr.classList.add('show'); }
   } catch { alertErr.textContent='Koneksi gagal.'; alertErr.classList.add('show'); }
 }
 
-// ─── Wallet List ───
-const iMap = { dana:'public/dana.png', gopay:'public/gopay.png', shopeepay:'public/shopeepay.png' };
+// â”€â”€â”€ Wallet List â”€â”€â”€
+const iMap = { dana:'public/dana.png', gopay:'public/gopay.png', shopeepay:'public/shopeepay.png', jago:'public/jago.png' };
 function getIcon(name) {
   const n=name.toLowerCase();
   for(const k of Object.keys(iMap)){if(n.includes(k))return `<img src="${iMap[k]}" style="width:28px;height:28px;border-radius:7px;object-fit:cover;border:1.5px solid rgba(0,0,0,0.1);" alt="${name}">`;}
-  const e=n.includes('saving')?'🐷':'💵';
+  const e=n.includes('saving')?'ðŸ·':'ðŸ’µ';
   const bg=n.includes('saving')?'#FFF8E7':'#F4F0FF';
   return `<div style="width:28px;height:28px;border-radius:7px;border:1.5px solid rgba(0,0,0,0.1);background:${bg};display:flex;align-items:center;justify-content:center;font-size:15px;">${e}</div>`;
 }
@@ -312,14 +312,14 @@ function renderWalletSettings() {
         <div class="wallet-settings-bal">${fmtS(w.balance)}</div>
       </div>
       <div class="wallet-settings-actions">
-        <button class="btn btn-ghost btn-xs" onclick="openWalletNameModal('${w.id}','${w.name.replace(/'/g,"\\'")}')">✏️ Nama</button>
-        <button class="btn btn-xs" onclick="openBalModal('${w.id}','${w.name.replace(/'/g,"\\'")}',${w.balance})">💰 Saldo</button>
+        <button class="btn btn-ghost btn-xs" onclick="openWalletNameModal('${w.id}','${w.name.replace(/'/g,"\\'")}')">âœï¸ Nama</button>
+        <button class="btn btn-xs" onclick="openBalModal('${w.id}','${w.name.replace(/'/g,"\\'")}',${w.balance})">ðŸ’° Saldo</button>
       </div>
     </div>
   `).join('');
 }
 
-// ─── Wallet Name Modal ───
+// â”€â”€â”€ Wallet Name Modal â”€â”€â”€
 function openWalletNameModal(id, name) {
   document.getElementById('walletEditId').value=id;
   document.getElementById('walletNewName').value=name;
@@ -336,12 +336,12 @@ async function submitWalletName() {
   try {
     const res=await fetch('settings_actions.php?action=update_wallet',{method:'POST',body:fd});
     const d=await res.json();
-    if(d.success){ closeWalletNameModal(); toast('Nama dompet diperbarui ✓','ok'); setTimeout(()=>location.reload(),1000); }
+    if(d.success){ closeWalletNameModal(); toast('Nama dompet diperbarui âœ“','ok'); setTimeout(()=>location.reload(),1000); }
     else { alertEl.textContent=d.message; alertEl.classList.add('show'); }
   } catch { alertEl.textContent='Koneksi gagal.'; alertEl.classList.add('show'); }
 }
 
-// ─── Balance Modal ───
+// â”€â”€â”€ Balance Modal â”€â”€â”€
 function updateBalDisplay() {
   const el=document.getElementById('balDisplay');
   const v=parseInt(balRaw||'0',10);
@@ -367,18 +367,18 @@ async function submitBalance() {
   const btn=document.getElementById('balSubmitBtn');
   const balance=parseInt(balRaw||'0',10);
   const walletId=document.getElementById('balWalletId').value;
-  btn.disabled=true; btn.textContent='Menyimpan…';
+  btn.disabled=true; btn.textContent='Menyimpanâ€¦';
   const fd=new FormData(); fd.append('walletId',walletId); fd.append('balance',balance);
   try {
     const res=await fetch('transaction_actions.php?action=set_balance',{method:'POST',body:fd});
     const d=await res.json();
-    if(d.success){ closeBalModal(); toast('Saldo diperbarui ✓','ok'); setTimeout(()=>location.reload(),1000); }
+    if(d.success){ closeBalModal(); toast('Saldo diperbarui âœ“','ok'); setTimeout(()=>location.reload(),1000); }
     else { alertEl.textContent=d.message; alertEl.classList.add('show'); }
   } catch { alertEl.textContent='Koneksi gagal.'; alertEl.classList.add('show'); }
-  btn.disabled=false; btn.textContent='💾 Simpan Saldo';
+  btn.disabled=false; btn.textContent='ðŸ’¾ Simpan Saldo';
 }
 
-// ─── Toast ───
+// â”€â”€â”€ Toast â”€â”€â”€
 function toast(msg,type='') {
   const c=document.getElementById('toastWrap');
   const t=document.createElement('div');
@@ -387,9 +387,10 @@ function toast(msg,type='') {
   setTimeout(()=>t.remove(),2600);
 }
 
-// ─── Init ───
+// â”€â”€â”€ Init â”€â”€â”€
 initToggles();
 renderWalletSettings();
 </script>
 </body>
 </html>
+
